@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CogType v2 — Research Tool</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --border: #d8d5ce;
+  --text: #1a1917;
+  --muted: #7a7770;
+  --accent: #1a1917;
+  --soft: #e8e5de;
+  --red: #c0392b;
+  --orange: #e67e22;
+  --green: #27ae60;
+  --blue: #2980b9;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* HEADER */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 13px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; }
+.logo span { color: var(--muted); }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.phase-indicator {
+  display: flex; gap: 0;
+  font-family: var(--mono); font-size: 10px;
+  border: 1px solid var(--border); border-radius: 3px; overflow: hidden;
+}
+.phase-step {
+  padding: 5px 12px; color: var(--muted);
+  border-right: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.phase-step:last-child { border-right: none; }
+.phase-step.active { background: var(--accent); color: #fff; }
+.phase-step.done { background: var(--soft); color: var(--text); }
+.status-chip { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
+.dot.rec { background: var(--red); animation: blink 1.4s infinite; }
+.dot.ok { background: var(--green); }
+.dot.warn { background: var(--orange); }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+
+/* SCREENS */
+.screen { display: none; flex: 1; justify-content: center; align-items: flex-start; padding: 44px 24px; }
+.screen.active { display: flex; }
+
+/* CARDS */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 36px 40px; width: 100%; max-width: 560px; }
+.card-wide { max-width: 820px; }
+
+h1 { font-size: 21px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 6px; }
+.sub { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 28px; }
+
+label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+input, select {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid var(--border); border-radius: 3px;
+  font-family: var(--mono); font-size: 13px;
+  background: var(--bg); color: var(--text);
+  margin-bottom: 18px; transition: border-color 0.15s;
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+input.err { border-color: var(--red); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: 3px; cursor: pointer;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  border: 1px solid var(--accent); background: var(--accent); color: #fff;
+  transition: opacity 0.15s; letter-spacing: 0.01em;
+}
+.btn:hover { opacity: 0.82; }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--text); border-color: var(--border); }
+.btn.ghost:hover { background: var(--soft); }
+.btn.danger { background: var(--red); border-color: var(--red); }
+.btn.success { background: var(--green); border-color: var(--green); }
+.btn-row { display: flex; gap: 9px; margin-top: 26px; flex-wrap: wrap; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+.info-box {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 3px;
+  padding: 14px 18px; margin-bottom: 20px;
+  font-size: 13px; line-height: 1.6; color: var(--muted);
+}
+.info-box strong { color: var(--text); font-weight: 500; }
+.info-box.warn { border-color: var(--orange); background: #fef9f0; }
+.info-box.danger { border-color: var(--red); background: #fdf0ef; }
+.info-box.ok { border-color: var(--green); background: #f0faf2; }
+
+.meta-pill {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 3px;
+  padding: 10px 16px; margin-bottom: 22px;
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+}
+.meta-pill strong { color: var(--text); }
+
+/* BASELINE SCREEN */
+.baseline-passage {
+  background: var(--soft); border: 1px solid var(--border); border-radius: 3px;
+  padding: 18px 20px; margin-bottom: 16px;
+  font-size: 14px; line-height: 1.8; color: var(--text);
+  font-family: var(--mono); letter-spacing: 0.01em;
+  user-select: none;
+}
+.baseline-area {
+  width: 100%; min-height: 120px; padding: 14px 16px;
+  border: 1px solid var(--border); border-radius: 3px;
+  font-family: var(--mono); font-size: 14px; line-height: 1.75;
+  resize: none; background: var(--surface); color: var(--text); outline: none;
+}
+.baseline-area:focus { border-color: var(--accent); }
+.wpm-meter {
+  display: flex; align-items: center; gap: 12px; margin-top: 12px;
+}
+.wpm-big {
+  font-family: var(--mono); font-size: 32px; font-weight: 600;
+  min-width: 60px; text-align: right;
+  transition: color 0.3s;
+}
+.wpm-label { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.progress-bar-outer {
+  flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+}
+.progress-bar-inner {
+  height: 100%; background: var(--accent); border-radius: 3px;
+  transition: width 0.3s, background 0.3s;
+}
+
+/* WRITING SCREEN */
+#screen-write { flex-direction: column; align-items: center; }
+.write-layout { width: 100%; max-width: 820px; }
+.write-topbar {
+  background: var(--surface); border: 1px solid var(--border);
+  border-bottom: none; border-radius: 4px 4px 0 0;
+  padding: 11px 20px; display: flex; align-items: center; justify-content: space-between;
+}
+.timer-big { font-family: var(--mono); font-size: 22px; font-weight: 600; letter-spacing: 0.04em; }
+.timer-big.warn { color: var(--orange); }
+.timer-big.crit { color: var(--red); }
+.badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 2px; border: 1px solid var(--border);
+}
+.badge.brain { background: #d4edda; border-color: #9fd4a9; color: #155724; }
+.badge.search { background: #d1ecf1; border-color: #9adce7; color: #0c5460; }
+.badge.llm { background: #fef3cd; border-color: #f6c85e; color: #856404; }
+.prompt-strip {
+  background: var(--soft); border: 1px solid var(--border);
+  border-bottom: none; padding: 13px 20px; font-size: 13px; line-height: 1.6;
+}
+.prompt-strip .tag { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+#essay-area {
+  width: 100%; min-height: 400px; padding: 20px;
+  border: 1px solid var(--border); border-top: none; border-radius: 0 0 0 0;
+  font-family: var(--mono); font-size: 14px; line-height: 1.8;
+  resize: vertical; background: var(--surface); color: var(--text); outline: none;
+}
+.write-bottombar {
+  background: var(--surface); border: 1px solid var(--border);
+  border-top: 1px solid var(--border); border-radius: 0 0 4px 4px;
+  padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
+}
+.live-stats { display: flex; gap: 18px; flex-wrap: wrap; }
+.ls { display: flex; flex-direction: column; }
+.ls-val { font-family: var(--mono); font-size: 16px; font-weight: 500; }
+.ls-key { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* RESULTS */
+.res-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin-bottom: 20px;
+}
+@media (max-width: 600px) { .res-grid { grid-template-columns: 1fr 1fr; } }
+.res-cell {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 3px;
+  padding: 12px 14px;
+}
+.res-lbl { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 3px; }
+.res-val { font-family: var(--mono); font-size: 17px; font-weight: 500; }
+.res-sub { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 2px; }
+.section-title {
+  font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--muted); margin: 18px 0 10px;
+}
+.raw-btn { font-family: var(--mono); font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0; margin-top: 10px; display: block; }
+#raw-out { display:none; margin-top:10px; font-family:var(--mono); font-size:10px; background:var(--bg); border:1px solid var(--border); border-radius:3px; padding:12px; max-height:180px; overflow-y:auto; white-space:pre-wrap; word-break:break-all; }
+
+/* CONSENT + UPLOAD */
+.modal-overlay {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
+  z-index:1200; align-items:center; justify-content:center; padding:24px;
+}
+.modal-overlay.show { display:flex; }
+.modal-card {
+  background: var(--surface); border:1px solid var(--border); border-radius:4px;
+  width:100%; max-width:760px; max-height:88vh; overflow:hidden; display:flex; flex-direction:column;
+}
+.modal-head {
+  padding:18px 24px; border-bottom:1px solid var(--border); background:var(--surface);
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.modal-title { font-size:18px; font-weight:600; letter-spacing:-0.02em; }
+.modal-body { padding:20px 24px; overflow:auto; background:var(--bg); }
+.modal-body p, .modal-body li { font-size:13px; line-height:1.7; color:var(--text); }
+.modal-body ul { margin:10px 0 14px 18px; }
+.modal-body .subtle { color:var(--muted); }
+.consent-check {
+  display:flex; gap:10px; align-items:flex-start; margin-top:14px;
+  padding:12px 14px; border:1px solid var(--border); border-radius:3px; background:var(--surface);
+}
+.consent-check input { width:auto; margin:3px 0 0 0; }
+.modal-foot {
+  padding:16px 24px; border-top:1px solid var(--border); background:var(--surface);
+  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+}
+.upload-inline {
+  margin: 14px 0 0; font-family: var(--mono); font-size: 11px; color: var(--muted);
+}
+.small-note {
+  font-family: var(--mono); font-size: 10px; color: var(--muted); line-height:1.5;
+}
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Cog<span>Type</span> — v2</div>
+  <div class="header-right">
+    <div class="phase-indicator">
+      <div class="phase-step active" id="ph-0">Setup</div>
+      <div class="phase-step" id="ph-1">Baseline</div>
+      <div class="phase-step" id="ph-2">Writing</div>
+      <div class="phase-step" id="ph-3">Results</div>
+    </div>
+    <div class="status-chip">
+      <div class="dot" id="status-dot"></div>
+      <span id="status-txt">idle</span>
+    </div>
+  </div>
+</header>
+
+
+<div id="consent-modal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="consent-title">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="consent-title">Research Consent</div>
+        <div class="small-note">Shown once on first visit on this device.</div>
+      </div>
+      <div class="badge" style="background:var(--soft); color:var(--text);">required</div>
+    </div>
+    <div class="modal-body" id="consent-body"></div>
+    <div class="modal-foot">
+      <div class="small-note" id="consent-error">You must review and agree before continuing.</div>
+      <div style="display:flex; gap:9px; flex-wrap:wrap;">
+        <button class="btn ghost" type="button" onclick="declineConsent()">Decline</button>
+        <button class="btn" type="button" id="consent-agree-btn" onclick="acceptConsent()" disabled>I Agree</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════
+     PHASE 0 — SETUP
+═══════════════════════════════════ -->
+<div class="screen active" id="screen-setup">
+  <div class="card">
+    <h1>Session Setup</h1>
+    <p class="sub">Researcher fills this in before handing the device to the participant. No data is transmitted — everything stays local.</p>
+
+    <label for="f-pid">Participant ID</label>
+    <input type="text" id="f-pid" placeholder="e.g. P001" maxlength="20">
+
+    <label for="f-sess">Session Number</label>
+    <select id="f-sess">
+      <option value="1">Session 1</option>
+      <option value="2">Session 2</option>
+    </select>
+
+    <label for="f-cond">Writing Condition</label>
+    <select id="f-cond">
+      <option value="brain">Brain-Only</option>
+      <option value="search">Search Engine-Assisted</option>
+      <option value="llm">LLM-Assisted</option>
+    </select>
+
+    <label for="f-prompt">Essay Prompt</label>
+    <select id="f-prompt">
+      <option value="0">A — Social Media & Democracy</option>
+      <option value="1">B — AI & Employment</option>
+      <option value="2">C — Climate Policy & Individual Action</option>
+      <option value="3">D — Free Speech & Online Platforms</option>
+    </select>
+
+    <label for="f-dur">Session Duration</label>
+    <select id="f-dur">
+      <option value="20">20 minutes</option>
+      <option value="15">15 minutes</option>
+      <option value="10">10 minutes (practice)</option>
+    </select>
+
+    <label for="f-kb">Keyboard Type</label>
+    <select id="f-kb">
+      <option value="laptop_builtin">Laptop built-in</option>
+      <option value="external_mechanical">External mechanical</option>
+      <option value="external_membrane">External membrane</option>
+      <option value="tablet_glass">Tablet / glass</option>
+      <option value="other">Other</option>
+    </select>
+
+    <label for="f-lang">Primary Language</label>
+    <select id="f-lang">
+      <option value="en">English</option>
+      <option value="zh">Chinese (Mandarin)</option>
+      <option value="es">Spanish</option>
+      <option value="fr">French</option>
+      <option value="other">Other</option>
+    </select>
+
+    <div class="info-box">
+      <strong>Note for researcher:</strong> Keyboard type and language are covariates — they will be included as control variables in the ANOVA. Record them accurately even if they seem minor. This tool keeps data local in the browser and now also stores an in-progress recovery snapshot on this device until the session is exported or reset.
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="setupDone()">Next: Baseline Test →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PHASE 1 — BASELINE TYPING TEST
+═══════════════════════════════════ -->
+<div class="screen" id="screen-baseline">
+  <div class="card card-wide">
+    <h1>Typing Speed Baseline</h1>
+    <p class="sub">Type the passage below as accurately and naturally as possible. This is not timed — just type at your normal speed. Your result is used as a personal baseline and to check eligibility.</p>
+
+    <div class="meta-pill">
+      <span>Participant: <strong id="b-pid">—</strong></span>
+      <span>Condition: <strong id="b-cond">—</strong></span>
+      <span>Session: <strong id="b-sess">—</strong></span>
+    </div>
+
+    <div class="baseline-passage" id="baseline-passage">
+      The relationship between technology and human cognition has become one of the most debated topics in modern psychology. As digital tools grow more capable, researchers are asking whether reliance on these tools changes the way people think, plan, and remember. Some argue that offloading cognitive tasks to machines frees up mental resources for higher-order thinking. Others contend that the practice erodes the very skills it replaces.
+    </div>
+
+    <label for="baseline-input">Type the passage above:</label>
+    <textarea id="baseline-input" class="baseline-area" placeholder="Start typing here…" rows="5" spellcheck="false"></textarea>
+
+    <div class="wpm-meter">
+      <div>
+        <div class="wpm-big" id="wpm-live">—</div>
+        <div class="wpm-label">WPM</div>
+      </div>
+      <div style="flex:1;">
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" id="wpm-bar" style="width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;">
+          <span>0</span><span style="color:var(--red)">25 (min)</span><span>60</span><span>100+</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="baseline-feedback" style="margin-top:14px;"></div>
+
+    <div class="btn-row">
+      <button class="btn" id="baseline-next-btn" disabled onclick="baselineDone()">Continue to Writing →</button>
+      <button class="btn ghost" onclick="resetBaseline()">Retake</button>
+      <button class="btn ghost" onclick="goTo('screen-setup')">← Back</button>
+    </div>
+    <p style="margin-top:18px;font-family:var(--mono);font-size:11px;color:var(--border);">
+      Researcher: <button onclick="openSkipModal()" style="background:none;border:none;font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;padding:0;">skip baseline</button>
+    </p>
+  </div>
+</div>
+
+<!-- PASSCODE MODAL -->
+<div id="skip-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:32px 36px;width:100%;max-width:360px;font-family:var(--sans);">
+    <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Researcher Passcode</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;">Enter the passcode to skip the baseline test. The session will be flagged as baseline-skipped in the export. This is only a local convenience gate on a static page, not a security boundary.</p>
+    <label>Passcode</label>
+    <input type="password" id="skip-passcode-input" placeholder="••••••" maxlength="20"
+      style="margin-bottom:8px;"
+      onkeydown="if(event.key==='Enter') attemptSkip()">
+    <div id="skip-error" style="font-family:var(--mono);font-size:11px;color:var(--red);min-height:16px;margin-bottom:14px;"></div>
+    <div style="display:flex;gap:9px;">
+      <button class="btn" onclick="attemptSkip()">Confirm Skip</button>
+      <button class="btn ghost" onclick="closeSkipModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PHASE 1b — REJECTED
+═══════════════════════════════════ -->
+<div class="screen" id="screen-rejected">
+  <div class="card">
+    <h1>Eligibility Check Failed</h1>
+    <p class="sub">This participant does not meet the minimum typing speed requirement for this study.</p>
+    <div class="info-box danger">
+      <strong>Result:</strong> Typing speed was below 25 WPM, the minimum threshold for valid keystroke dynamics analysis. Participants typing slower than 25 WPM produce insufficient keystroke event density for reliable IKI and burst feature extraction.
+    </div>
+    <div class="info-box">
+      <strong>Measured WPM:</strong> <span id="rej-wpm">—</span><br>
+      <strong>Required minimum:</strong> 25 WPM<br>
+      <strong>Participant ID:</strong> <span id="rej-pid">—</span>
+    </div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;">Log this participant as excluded in your records. Do not include this session in analysis. The participant may retake the baseline test once if they believe the result was affected by distraction or error.</p>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="goTo('screen-baseline')">Allow Retake</button>
+      <button class="btn ghost" onclick="goTo('screen-setup')">New Participant</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PHASE 1c — INSTRUCTIONS
+═══════════════════════════════════ -->
+<div class="screen" id="screen-instructions">
+  <div class="card">
+    <h1>Instructions</h1>
+    <p class="sub">Read carefully before the writing session begins.</p>
+    <div class="meta-pill">
+      <span>Participant: <strong id="i-pid">—</strong></span>
+      <span>Condition: <strong id="i-cond">—</strong></span>
+      <span>Baseline: <strong id="i-wpm">—</strong> WPM</span>
+      <span>Duration: <strong id="i-dur">—</strong> min</span>
+    </div>
+    <div id="cond-instructions"></div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-top:16px;">The timer starts when you click <strong>Begin Writing</strong>. Type your essay in the text area. Keystroke timing will be recorded — no text content is stored.</p>
+    <div class="btn-row">
+      <button class="btn" onclick="beginWriting()">Begin Writing →</button>
+      <button class="btn ghost" onclick="goTo('screen-setup')">← Back to Setup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PHASE 2 — WRITING
+═══════════════════════════════════ -->
+<div class="screen" id="screen-write">
+  <div class="write-layout">
+    <div class="write-topbar">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="timer-big" id="timer-disp">20:00</div>
+        <div class="badge" id="cond-badge">—</div>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--muted);" id="write-pid-lbl"></span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost" style="padding:6px 13px;font-size:12px;" onclick="endWriting()">End Early</button>
+      </div>
+    </div>
+    <div class="prompt-strip">
+      <span class="tag">Prompt</span>
+      <span id="write-prompt-text"></span>
+    </div>
+    <textarea id="essay-area" placeholder="Begin writing your essay here…" spellcheck="true"></textarea>
+    <div class="write-bottombar">
+      <div class="live-stats">
+        <div class="ls"><span class="ls-val" id="lv-keys">0</span><span class="ls-key">keys</span></div>
+        <div class="ls"><span class="ls-val" id="lv-wpm">0</span><span class="ls-key">wpm</span></div>
+        <div class="ls"><span class="ls-val" id="lv-words">0</span><span class="ls-key">words</span></div>
+        <div class="ls"><span class="ls-val" id="lv-pauses">0</span><span class="ls-key">pauses&gt;1s</span></div>
+        <div class="ls"><span class="ls-val" id="lv-bs">0</span><span class="ls-key">backspace</span></div>
+        <div class="ls"><span class="ls-val" id="lv-bursts">0</span><span class="ls-key">bursts</span></div>
+      </div>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--red);">● recording</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PHASE 3 — RESULTS
+═══════════════════════════════════ -->
+<div class="screen" id="screen-results">
+  <div class="card card-wide">
+    <h1>Session Complete</h1>
+    <p class="sub">All computed features are shown below. Export both files for your records.</p>
+
+    <div class="meta-pill" id="res-meta-pill"></div>
+
+    <div class="section-title">Core Features (Primary Analysis)</div>
+    <div class="res-grid" id="rg-core"></div>
+
+    <div class="section-title">IKI Detail</div>
+    <div class="res-grid" id="rg-iki"></div>
+
+    <div class="section-title">Burst Analysis</div>
+    <div class="res-grid" id="rg-burst"></div>
+
+    <div class="section-title">Revision Behaviour</div>
+    <div class="res-grid" id="rg-revision"></div>
+
+    <div class="section-title">Temporal Thirds (IKI Trajectory)</div>
+    <div class="res-grid" id="rg-thirds"></div>
+
+    <div class="section-title">Hold Time (Alpha Keys)</div>
+    <div class="res-grid" id="rg-hold"></div>
+
+    <div class="section-title">Letter-Transition Latency</div>
+    <div class="res-grid" id="rg-digraph"></div>
+
+    <div class="section-title">Session Metadata</div>
+    <div class="res-grid" id="rg-meta"></div>
+
+    <hr>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;">CSV: one row per keydown event. JSON: full event log + all computed features + session metadata. Filenames include participant ID, session, and condition.</p>
+    <div class="btn-row">
+      <button class="btn" onclick="exportCSV()">Export CSV</button>
+      <button class="btn ghost" onclick="exportJSON()">Export JSON</button>
+      <button class="btn ghost" onclick="newSession()">New Session</button>
+    </div>
+    <button class="raw-btn" onclick="toggleRaw()">show raw event log (first 100 events)</button>
+    <div id="raw-out"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  CONSTANTS
+// ════════════════════════════════════════════
+const MIN_WPM = 25;
+const PAUSE_THRESHOLD_MS = 1000;       // pause > this counts as a thinking pause
+const BURST_GAP_MS = 2000;             // IKI > this breaks a burst
+const PRE_SENT_MIN_MS = 300;           // minimum for a pre-sentence pause to count
+const IKI_OUTLIER_MAX = 30000;         // cap outlier IKIs (e.g. participant walked away)
+
+const PROMPTS = [
+  "Social media platforms have fundamentally changed how democratic societies form political opinions. Argue whether this change has been net positive or net negative for democracy, using specific reasoning to support your position.",
+  "Artificial intelligence will eliminate more jobs than it creates over the next two decades. Do you agree or disagree? Use logical reasoning to defend your position.",
+  "Individual lifestyle changes such as diet, travel habits, and consumption patterns are insufficient to address climate change without systemic policy intervention. Defend or challenge this claim.",
+  "Private technology companies should have the right to moderate speech on their platforms without government oversight. Argue for or against this position and address the strongest counterargument."
+];
+
+const COND_LABELS = { brain: 'Brain-Only', search: 'Search Engine', llm: 'LLM-Assisted' };
+const BASELINE_TEXT = `The relationship between technology and human cognition has become one of the most debated topics in modern psychology. As digital tools grow more capable, researchers are asking whether reliance on these tools changes the way people think, plan, and remember. Some argue that offloading cognitive tasks to machines frees up mental resources for higher-order thinking. Others contend that the practice erodes the very skills it replaces.`;
+
+const CONSENT_VERSION = '2026-03-30-v2';
+const CONSENT_STORAGE_KEY = `cogtype_consent_${CONSENT_VERSION}`;
+
+const CONSENT_CONFIG = {
+  studyTitle: 'Cognitive Effects of Writing Assistance Tools',
+  researcherName: 'Ethan Lo',
+  researcherEmail: '128ethanl@gmail.com',
+  irbName: 'Prototype only',
+  irbContact: 'none',
+  purpose: 'This study examines typing behavior and writing-process measures across different writing conditions.',
+  duration: 'About 20 minutes, plus setup and baseline typing.',
+  procedures: [
+    'You will complete a baseline typing task and one timed writing task.',
+    'The app records keystroke timing, revision behavior, pauses, and session metadata.',
+    'At the end of the session, you will be asked to download the session files and provide them to the researcher according to the study instructions.'
+  ],
+  risks: [
+    'Possible mild fatigue, frustration, or discomfort from timed writing.',
+    'Privacy risk if research data were mishandled, though the app is designed to minimize stored identifiers.'
+  ],
+  benefits: [
+    'You may not receive a direct personal benefit.',
+    'Your participation may help researchers better understand writing processes and tool-assisted cognition.'
+  ],
+  compensation: '5 cents and a piece of gum',
+  confidentiality: 'The study stores participant ID, timing data, and session metadata in the browser until you download the session files. Avoid entering names or other directly identifying information unless your approved protocol requires it.',
+  voluntary: 'Participation is voluntary. You may stop at any time without penalty and may decline to answer any question.',
+  withdrawal: 'If you withdraw before submitting, tell the researcher immediately so they can follow your approved protocol for deleting or retaining partial data.',
+  questions: 'Questions about the study should go to the researcher. Questions about your rights as a participant should go to the IRB / ethics office.',
+  adultStatement: 'By agreeing, you confirm that you are authorized to consent under the approved protocol.'
+};
+
+
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+let meta = {};
+let baselineWPM = 0;
+let events = [];            // full keystroke event log
+let keyDownMap = new Map(); // physical key id -> queue of active presses
+let sessionStart = null;
+let lastKeyDownTime = null;
+let timerInt = null;
+let liveInt = null;
+let activeBurstLen = 0;
+let burstLengths = [];
+let isWriting = false;
+let writingListenersBound = false;
+let hasEnded = false;
+let pressSeq = 0;
+let autoSaveInt = null;
+
+// live counters
+let cntKeys = 0, cntBackspace = 0, cntPause = 0, cntBursts = 0;
+
+// ════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // phase indicator
+  const map = { 'screen-setup':0, 'screen-baseline':1, 'screen-instructions':1, 'screen-rejected':1, 'screen-write':2, 'screen-results':3 };
+  const phase = map[id] ?? 0;
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById(`ph-${i}`);
+    el.classList.remove('active','done');
+    if (i < phase) el.classList.add('done');
+    else if (i === phase) el.classList.add('active');
+  }
+}
+
+// ════════════════════════════════════════════
+//  PHASE 0 — SETUP
+// ════════════════════════════════════════════
+function setupDone() {
+  const pid = document.getElementById('f-pid').value.trim();
+  if (!pid) { document.getElementById('f-pid').classList.add('err'); document.getElementById('f-pid').focus(); return; }
+  document.getElementById('f-pid').classList.remove('err');
+
+  attachConsentToMeta();
+  meta = {
+    participantId: pid,
+    session: document.getElementById('f-sess').value,
+    condition: document.getElementById('f-cond').value,
+    promptIndex: parseInt(document.getElementById('f-prompt').value),
+    durationMinutes: parseInt(document.getElementById('f-dur').value),
+    keyboardType: document.getElementById('f-kb').value,
+    primaryLanguage: document.getElementById('f-lang').value,
+    collectedAt: new Date().toISOString()
+  };
+
+  // fill baseline screen meta
+  document.getElementById('b-pid').textContent = meta.participantId;
+  document.getElementById('b-cond').textContent = COND_LABELS[meta.condition];
+  document.getElementById('b-sess').textContent = `Session ${meta.session}`;
+
+  resetBaseline();
+  goTo('screen-baseline');
+}
+
+// ════════════════════════════════════════════
+//  PHASE 1 — BASELINE
+// ════════════════════════════════════════════
+let baselineStart = null;
+let baselineActive = false;
+
+function resetBaseline() {
+  document.getElementById('baseline-input').value = '';
+  document.getElementById('wpm-live').textContent = '—';
+  document.getElementById('wpm-bar').style.width = '0%';
+  document.getElementById('wpm-bar').style.background = 'var(--accent)';
+  document.getElementById('baseline-feedback').innerHTML = '';
+  document.getElementById('baseline-next-btn').disabled = true;
+  baselineStart = null; baselineActive = false; baselineWPM = 0;
+  document.getElementById('baseline-input').focus();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('baseline-input');
+  if (inp) {
+    inp.addEventListener('input', handleBaselineInput);
+    inp.addEventListener('keydown', () => {
+      if (!baselineStart) { baselineStart = Date.now(); baselineActive = true; }
+    });
+  }
+  bindGlobalListeners();
+  restoreDraftIfAvailable();
+  renderConsentModal();
+  enforceConsentGate();
+});
+
+function handleBaselineInput() {
+  if (!baselineStart) return;
+  const val = document.getElementById('baseline-input').value;
+  const words = val.trim().split(/\s+/).filter(w => w.length > 0).length;
+  const elapsed = (Date.now() - baselineStart) / 60000;
+  const wpm = elapsed > 0.05 ? Math.round(words / elapsed) : 0;
+
+  const wpmEl = document.getElementById('wpm-live');
+  const barEl = document.getElementById('wpm-bar');
+  wpmEl.textContent = wpm;
+
+  const pct = Math.min((wpm / 100) * 100, 100);
+  barEl.style.width = pct + '%';
+
+  if (wpm < MIN_WPM) {
+    wpmEl.style.color = 'var(--red)';
+    barEl.style.background = 'var(--red)';
+  } else if (wpm < 50) {
+    wpmEl.style.color = 'var(--orange)';
+    barEl.style.background = 'var(--orange)';
+  } else {
+    wpmEl.style.color = 'var(--green)';
+    barEl.style.background = 'var(--green)';
+  }
+
+  // check if passage mostly done (typed at least 70% of word count)
+  const targetWords = BASELINE_TEXT.trim().split(/\s+/).length;
+  if (words >= Math.floor(targetWords * 0.7)) {
+    baselineWPM = wpm;
+    showBaselineResult(wpm);
+  }
+}
+
+function showBaselineResult(wpm) {
+  const fb = document.getElementById('baseline-feedback');
+  const btn = document.getElementById('baseline-next-btn');
+  if (wpm < MIN_WPM) {
+    fb.innerHTML = `<div class="info-box danger"><strong>Below minimum threshold (${wpm} WPM).</strong> This participant types below 25 WPM. They do not qualify for this study. Click "Retake" to allow one retry, or proceed to the rejection screen.</div>`;
+    btn.textContent = 'View Rejection →';
+    btn.classList.add('danger');
+    btn.disabled = false;
+    btn.onclick = () => showRejected(wpm);
+  } else {
+    fb.innerHTML = `<div class="info-box ok"><strong>Eligible (${wpm} WPM).</strong> Baseline recorded. This will be stored as a covariate in the exported data.</div>`;
+    btn.textContent = 'Continue to Instructions →';
+    btn.classList.remove('danger');
+    btn.disabled = false;
+    btn.onclick = baselineDone;
+  }
+}
+
+function showRejected(wpm) {
+  document.getElementById('rej-wpm').textContent = wpm;
+  document.getElementById('rej-pid').textContent = meta.participantId;
+  goTo('screen-rejected');
+}
+
+function baselineDone() {
+  meta.baselineWPM = baselineWPM;
+
+  // Instructions screen
+  document.getElementById('i-pid').textContent = meta.participantId;
+  document.getElementById('i-cond').textContent = COND_LABELS[meta.condition];
+  document.getElementById('i-wpm').textContent = baselineWPM;
+  document.getElementById('i-dur').textContent = meta.durationMinutes;
+
+  const instrMap = {
+    brain: `<div class="info-box"><strong>Brain-Only condition.</strong> Write your essay using only your own knowledge and memory. Do not open any other browser tabs. Do not use a search engine. Do not use any AI tool. If you cannot recall a fact, reason through it or skip it. The quality of the essay is not being evaluated — your natural writing process is.</div>`,
+    search: `<div class="info-box"><strong>Search Engine condition.</strong> You may use a search engine (Google, Bing, etc.) to look up information. Open a separate tab to search. Do not use any AI tools such as ChatGPT, Claude, or Gemini. Write the essay in your own words using search results only as reference.</div>`,
+    llm: `<div class="info-box"><strong>LLM-Assisted condition.</strong> You may use any AI language model (ChatGPT, Claude, Gemini, etc.) however you like — for ideas, outlines, full paragraphs, or anything else. There are no restrictions. Work naturally.</div>`
+  };
+  document.getElementById('cond-instructions').innerHTML = instrMap[meta.condition];
+  goTo('screen-instructions');
+}
+
+// ════════════════════════════════════════════
+//  PHASE 2 — WRITING
+// ════════════════════════════════════════════
+function beginWriting() {
+  // Reset
+  events = [];
+  keyDownMap = new Map();
+  lastKeyDownTime = null;
+  cntKeys = 0; cntBackspace = 0; cntPause = 0; cntBursts = 0;
+  activeBurstLen = 0; burstLengths = [];
+  pressSeq = 0;
+  hasEnded = false;
+  isWriting = true;
+
+  const area = document.getElementById('essay-area');
+  area.value = '';
+  area.disabled = false;
+
+  // Fill UI
+  document.getElementById('write-prompt-text').textContent = PROMPTS[meta.promptIndex];
+  document.getElementById('write-pid-lbl').textContent = `${meta.participantId} · S${meta.session}`;
+  const badge = document.getElementById('cond-badge');
+  badge.className = `badge ${meta.condition}`;
+  badge.textContent = COND_LABELS[meta.condition];
+
+  // Reset live UI
+  document.getElementById('lv-keys').textContent = '0';
+  document.getElementById('lv-wpm').textContent = '0';
+  document.getElementById('lv-words').textContent = '0';
+  document.getElementById('lv-pauses').textContent = '0';
+  document.getElementById('lv-bs').textContent = '0';
+  document.getElementById('lv-bursts').textContent = '0';
+
+  // Status
+  setStatus('rec', 'recording');
+  goTo('screen-write');
+
+  sessionStart = Date.now();
+  startCountdown(meta.durationMinutes * 60);
+  if (liveInt) clearInterval(liveInt);
+  liveInt = setInterval(updateLive, 1500);
+  if (autoSaveInt) clearInterval(autoSaveInt);
+  autoSaveInt = setInterval(saveDraftSnapshot, 2000);
+  attachWritingListeners();
+  area.focus();
+  saveDraftSnapshot();
+}
+
+function attachWritingListeners() {
+  if (writingListenersBound) return;
+  const area = document.getElementById('essay-area');
+
+  area.addEventListener('keydown', e => {
+    if (!isWriting || hasEnded) return;
+
+    const now = Date.now();
+    const elapsed = now - sessionStart;
+    const cat = keyCategory(e.key);
+    const physicalKey = getPhysicalKeyId(e);
+    const iki = lastKeyDownTime !== null ? (now - lastKeyDownTime) : null;
+    const ikiCapped = (iki !== null && iki > IKI_OUTLIER_MAX) ? IKI_OUTLIER_MAX : iki;
+
+    if (iki !== null && iki > PAUSE_THRESHOLD_MS) cntPause++;
+
+    if (iki === null || iki > BURST_GAP_MS) {
+      if (activeBurstLen > 0) { burstLengths.push(activeBurstLen); cntBursts++; }
+      activeBurstLen = 1;
+    } else {
+      activeBurstLen++;
+    }
+
+    if (cat === 'backspace') cntBackspace++;
+    cntKeys++;
+
+    const pressId = ++pressSeq;
+    const pressRecord = {
+      pressId,
+      tDownAbs: now,
+      tDown: elapsed,
+      key: e.key,
+      code: e.code || '',
+      cat
+    };
+
+    if (!keyDownMap.has(physicalKey)) keyDownMap.set(physicalKey, []);
+    keyDownMap.get(physicalKey).push(pressRecord);
+
+    lastKeyDownTime = now;
+
+    events.push({
+      pressId,
+      t: elapsed,
+      type: 'D',
+      key: sanitizeKeyLabel(e.key),
+      code: e.code || '',
+      cat,
+      iki: ikiCapped,
+      rawIki: iki,
+      pauseFlag: (iki !== null && iki > PAUSE_THRESHOLD_MS) ? 1 : 0,
+      burstPos: activeBurstLen,
+      cumKeys: cntKeys
+    });
+
+    updateLiveCounters();
+  });
+
+  area.addEventListener('keyup', e => {
+    if (!isWriting) return;
+
+    const now = Date.now();
+    const elapsed = now - sessionStart;
+    const cat = keyCategory(e.key);
+    const physicalKey = getPhysicalKeyId(e);
+    const queue = keyDownMap.get(physicalKey) || [];
+    const pressRecord = queue.length ? queue.shift() : null;
+    if (queue.length === 0) keyDownMap.delete(physicalKey);
+
+    const holdMs = pressRecord ? (now - pressRecord.tDownAbs) : null;
+    events.push({
+      pressId: pressRecord ? pressRecord.pressId : null,
+      t: elapsed,
+      type: 'U',
+      key: sanitizeKeyLabel(e.key),
+      code: e.code || '',
+      cat,
+      hold: (holdMs !== null && holdMs >= 0 && holdMs < 10000) ? holdMs : null
+    });
+  });
+
+  writingListenersBound = true;
+}
+
+function keyCategory(key) {
+  if (key === 'Backspace') return 'backspace';
+  if (key === 'Delete') return 'delete';
+  if (key === ' ') return 'space';
+  if (['.','?','!'].includes(key)) return 'sent_end';
+  if ([',',';',':'].includes(key)) return 'punct';
+  if (key === 'Enter') return 'enter';
+  if (key === 'Tab') return 'tab';
+  if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)) return 'arrow';
+  if (['Home','End','PageUp','PageDown'].includes(key)) return 'nav';
+  if (key.length === 1 && key >= 'a' && key <= 'z') return 'alpha_lower';
+  if (key.length === 1 && key >= 'A' && key <= 'Z') return 'alpha_upper';
+  if (key.length === 1 && key >= '0' && key <= '9') return 'digit';
+  if (key.length === 1) return 'symbol';
+  return 'other';
+}
+
+function getPhysicalKeyId(e) {
+  return `${e.code || e.key}::${e.location || 0}`;
+}
+
+function sanitizeKeyLabel(key) {
+  const named = ['Backspace','Delete','Enter','Tab','Shift','Control','Alt','Meta','CapsLock','Escape',
+    'ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'];
+  if (named.includes(key)) return key;
+  if (key === ' ') return 'Space';
+  if (key.length === 1) return key;
+  return 'Other';
+}
+
+function updateLiveCounters() {
+  document.getElementById('lv-keys').textContent = cntKeys;
+  document.getElementById('lv-pauses').textContent = cntPause;
+  document.getElementById('lv-bs').textContent = cntBackspace;
+  document.getElementById('lv-bursts').textContent = cntBursts + (activeBurstLen > 0 ? 1 : 0);
+}
+
+function bindGlobalListeners() {
+  document.addEventListener('visibilitychange', () => {
+    if (!isWriting || !sessionStart || hasEnded) return;
+    const now = Date.now();
+    const elapsed = now - sessionStart;
+    events.push({
+      t: elapsed,
+      type: 'META',
+      cat: document.hidden ? 'tab_hidden' : 'tab_visible',
+      iki: null
+    });
+    saveDraftSnapshot();
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if (isWriting && !hasEnded) saveDraftSnapshot();
+  });
+}
+
+function saveDraftSnapshot() {
+  if (!isWriting || !sessionStart || hasEnded) return;
+  const payload = {
+    meta,
+    baselineWPM,
+    sessionStart,
+    lastKeyDownTime,
+    cntKeys,
+    cntBackspace,
+    cntPause,
+    cntBursts,
+    activeBurstLen,
+    burstLengths,
+    pressSeq,
+    events,
+    essayText: document.getElementById('essay-area').value,
+    savedAt: new Date().toISOString()
+  };
+  sessionStorage.setItem('cogtype_recovery', JSON.stringify(payload));
+}
+
+function restoreDraftIfAvailable() {
+  try {
+    const raw = sessionStorage.getItem('cogtype_recovery');
+    if (!raw) return;
+    const snap = JSON.parse(raw);
+    if (!snap || !snap.meta || !snap.essayText) return;
+
+    const setupBox = document.querySelector('#screen-setup .sub');
+    if (setupBox) {
+      const msg = document.createElement('div');
+      msg.className = 'info-box warn';
+      msg.innerHTML = `<strong>Recovery available.</strong> An unfinished session for participant <strong>${snap.meta.participantId || '—'}</strong> was found on this device from ${new Date(snap.savedAt).toLocaleString()}. Use the button below to restore it.`;
+      const btnRow = document.querySelector('#screen-setup .btn-row');
+      btnRow.parentNode.insertBefore(msg, btnRow);
+      const btn = document.createElement('button');
+      btn.className = 'btn ghost';
+      btn.textContent = 'Restore unfinished session';
+      btn.onclick = () => restoreFromSnapshot(snap);
+      btnRow.prepend(btn);
+    }
+  } catch (err) {
+    sessionStorage.removeItem('cogtype_recovery');
+  }
+}
+
+function restoreFromSnapshot(snap) {
+  meta = snap.meta || {};
+  baselineWPM = snap.baselineWPM || 0;
+  events = Array.isArray(snap.events) ? snap.events : [];
+  sessionStart = snap.sessionStart || Date.now();
+  lastKeyDownTime = snap.lastKeyDownTime || null;
+  cntKeys = snap.cntKeys || 0;
+  cntBackspace = snap.cntBackspace || 0;
+  cntPause = snap.cntPause || 0;
+  cntBursts = snap.cntBursts || 0;
+  activeBurstLen = snap.activeBurstLen || 0;
+  burstLengths = Array.isArray(snap.burstLengths) ? snap.burstLengths : [];
+  pressSeq = snap.pressSeq || 0;
+  keyDownMap = new Map();
+  hasEnded = false;
+  isWriting = true;
+
+  document.getElementById('write-prompt-text').textContent = PROMPTS[meta.promptIndex];
+  document.getElementById('write-pid-lbl').textContent = `${meta.participantId} · S${meta.session}`;
+  const badge = document.getElementById('cond-badge');
+  badge.className = `badge ${meta.condition}`;
+  badge.textContent = COND_LABELS[meta.condition];
+  const area = document.getElementById('essay-area');
+  area.value = snap.essayText || '';
+  area.disabled = false;
+
+  updateLiveCounters();
+  updateLive();
+  setStatus('warn', 'restored');
+  goTo('screen-write');
+
+  const elapsedSecs = Math.max(0, Math.floor((Date.now() - sessionStart) / 1000));
+  const remainingSecs = Math.max(0, (meta.durationMinutes * 60) - elapsedSecs);
+  startCountdown(remainingSecs);
+  if (liveInt) clearInterval(liveInt);
+  liveInt = setInterval(updateLive, 1500);
+  if (autoSaveInt) clearInterval(autoSaveInt);
+  autoSaveInt = setInterval(saveDraftSnapshot, 2000);
+  attachWritingListeners();
+  area.focus();
+}
+
+
+function renderConsentModal() {
+  const body = document.getElementById('consent-body');
+  body.innerHTML = `
+    <div class="info-box warn">
+      <strong>Please review before participating.</strong> This screen is a template aligned to common human-subject informed-consent elements, but you still need your own IRB / ethics review to approve the exact language and process for your study.
+    </div>
+    <p><strong>Study title:</strong> ${CONSENT_CONFIG.studyTitle}</p>
+    <p><strong>Researcher:</strong> ${CONSENT_CONFIG.researcherName} · ${CONSENT_CONFIG.researcherEmail}</p>
+    <p><strong>IRB / Ethics contact:</strong> ${CONSENT_CONFIG.irbName} · ${CONSENT_CONFIG.irbContact}</p>
+    <hr>
+    <p><strong>Purpose.</strong> ${CONSENT_CONFIG.purpose}</p>
+    <p><strong>What you will do.</strong></p>
+    <ul>${CONSENT_CONFIG.procedures.map(x => `<li>${x}</li>`).join('')}</ul>
+    <p><strong>Expected time.</strong> ${CONSENT_CONFIG.duration}</p>
+    <p><strong>Reasonably foreseeable risks or discomforts.</strong></p>
+    <ul>${CONSENT_CONFIG.risks.map(x => `<li>${x}</li>`).join('')}</ul>
+    <p><strong>Potential benefits.</strong></p>
+    <ul>${CONSENT_CONFIG.benefits.map(x => `<li>${x}</li>`).join('')}</ul>
+    <p><strong>Compensation.</strong> ${CONSENT_CONFIG.compensation}</p>
+    <p><strong>Confidentiality.</strong> ${CONSENT_CONFIG.confidentiality}</p>
+    <p><strong>Voluntary participation.</strong> ${CONSENT_CONFIG.voluntary}</p>
+    <p><strong>Withdrawal.</strong> ${CONSENT_CONFIG.withdrawal}</p>
+    <p><strong>Questions and participant rights.</strong> ${CONSENT_CONFIG.questions}</p>
+    <div class="consent-check">
+      <input id="consent-checkbox" type="checkbox" onchange="updateConsentButton()">
+      <label for="consent-checkbox" style="margin:0; font-size:13px; text-transform:none; letter-spacing:0; font-weight:400; color:var(--text);">
+        I have read this information, had the chance to ask questions if applicable, and voluntarily agree to participate. ${CONSENT_CONFIG.adultStatement}
+      </label>
+    </div>
+    <p class="subtle" style="margin-top:12px;">Consent version: ${CONSENT_VERSION}</p>
+  `;
+}
+
+function updateConsentButton() {
+  const checked = document.getElementById('consent-checkbox')?.checked;
+  document.getElementById('consent-agree-btn').disabled = !checked;
+  document.getElementById('consent-error').textContent = checked
+    ? 'Consent checkbox selected.'
+    : 'You must review and agree before continuing.';
+}
+
+function hasStoredConsent() {
+  try { return !!localStorage.getItem(CONSENT_STORAGE_KEY); }
+  catch (e) { return false; }
+}
+
+function enforceConsentGate() {
+  if (hasStoredConsent()) return;
+  const modal = document.getElementById('consent-modal');
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  setStatus('warn', 'consent required');
+}
+
+function acceptConsent() {
+  const payload = {
+    acceptedAt: new Date().toISOString(),
+    consentVersion: CONSENT_VERSION
+  };
+  localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(payload));
+  meta.consentAcceptedAt = payload.acceptedAt;
+  meta.consentVersion = payload.consentVersion;
+  closeConsentModal();
+  setStatus('', 'idle');
+}
+
+function declineConsent() {
+  alert('Consent was not provided. The study app will remain blocked on this device until the page is closed.');
+}
+
+function closeConsentModal() {
+  const modal = document.getElementById('consent-modal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+function attachConsentToMeta() {
+  try {
+    const raw = localStorage.getItem(CONSENT_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    meta.consentAcceptedAt = parsed.acceptedAt || null;
+    meta.consentVersion = parsed.consentVersion || CONSENT_VERSION;
+  } catch (e) {
+    meta.consentAcceptedAt = null;
+    meta.consentVersion = CONSENT_VERSION;
+  }
+}
+
+
+// ════════════════════════════════════════════
+//  TIMER
+// ════════════════════════════════════════════
+function startCountdown(secs) {
+  if (timerInt) clearInterval(timerInt);
+  let rem = secs;
+  renderTimer(rem);
+  timerInt = setInterval(() => {
+    rem--;
+    renderTimer(rem);
+    if (rem <= 0) { clearInterval(timerInt); endWriting(); }
+  }, 1000);
+}
+
+function renderTimer(s) {
+  const el = document.getElementById('timer-disp');
+  el.textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  el.className = 'timer-big' + (s <= 60 ? ' crit' : s <= 180 ? ' warn' : '');
+}
+
+function updateLive() {
+  const text = document.getElementById('essay-area').value;
+  const words = text.trim().split(/\s+/).filter(w=>w.length>0).length;
+  const mins = (Date.now() - sessionStart) / 60000;
+  document.getElementById('lv-wpm').textContent = mins > 0.1 ? Math.round(words/mins) : 0;
+  document.getElementById('lv-words').textContent = words;
+}
+
+// ════════════════════════════════════════════
+//  END SESSION
+// ════════════════════════════════════════════
+async function endWriting() {
+  if (hasEnded) return;
+  hasEnded = true;
+  isWriting = false;
+  clearInterval(timerInt);
+  clearInterval(liveInt);
+  clearInterval(autoSaveInt);
+  if (activeBurstLen > 0) { burstLengths.push(activeBurstLen); cntBursts++; activeBurstLen = 0; }
+  setStatus('ok', 'complete');
+  const f = computeFeatures();
+  renderResults(f);
+  sessionStorage.removeItem('cogtype_recovery');
+  goTo('screen-results');
+
+}
+
+// ════════════════════════════════════════════
+//  FEATURE COMPUTATION
+// ════════════════════════════════════════════
+function computeFeatures() {
+  const downs = events.filter(e => e.type === 'D');
+  const ups = events.filter(e => e.type === 'U');
+  const alphaDowns = downs.filter(e => e.cat === 'alpha_lower' || e.cat === 'alpha_upper');
+  const ikis = downs.map(e=>e.iki).filter(v=>v!==null && v>=0 && v<=IKI_OUTLIER_MAX);
+
+  // ── Basic counts ──
+  const totalKeys = downs.length;
+  const nBackspace = downs.filter(e=>e.cat==='backspace').length;
+  const nDelete = downs.filter(e=>e.cat==='delete').length;
+  const nSpace = downs.filter(e=>e.cat==='space').length;
+  const nAlpha = alphaDowns.length;
+  const nSentEnd = downs.filter(e=>e.cat==='sent_end').length;
+  const nArrow = downs.filter(e=>e.cat==='arrow').length;
+  const nNav = downs.filter(e=>e.cat==='nav').length;
+  const tabSwitches = events.filter(e=>e.type==='META' && e.cat==='tab_hidden').length;
+
+  // ── IKI stats ──
+  const meanIKI = mean(ikis);
+  const medIKI = median(ikis);
+  const sdIKI = stddev(ikis);
+  const varIKI = sdIKI * sdIKI;
+  const cvIKI = meanIKI > 0 ? sdIKI / meanIKI : 0;  // coefficient of variation
+
+  // ── Pause stats ──
+  const pauseIKIs = ikis.filter(v=>v>PAUSE_THRESHOLD_MS);
+  const nPauses = pauseIKIs.length;
+  const meanPause = mean(pauseIKIs);
+  const maxPause = pauseIKIs.length ? Math.max(...pauseIKIs) : 0;
+  const pauseFreqPer100 = totalKeys > 0 ? (nPauses/totalKeys)*100 : 0;
+  const totalPauseTime = pauseIKIs.reduce((a,b)=>a+b,0);
+  const totalTime = events.length ? events[events.length-1].t : 1;
+  const pauseTimeFraction = totalTime > 0 ? totalPauseTime / totalTime : 0;
+
+  // ── Pre-sentence pauses ──
+  const sentEndIdxs = downs.reduce((arr,e,i)=>{ if(e.cat==='sent_end') arr.push(i); return arr; },[]);
+  const preSentPauses = [];
+  sentEndIdxs.forEach(si => {
+    if (si+1 < downs.length) {
+      const gap = downs[si+1].iki;
+      if (gap !== null && gap >= PRE_SENT_MIN_MS) preSentPauses.push(gap);
+    }
+  });
+  const meanPreSent = mean(preSentPauses);
+  const medPreSent = median(preSentPauses);
+
+  // ── Burst stats ──
+  const nBursts = burstLengths.length;
+  const meanBurst = mean(burstLengths);
+  const medBurst = median(burstLengths);
+  const maxBurst = burstLengths.length ? Math.max(...burstLengths) : 0;
+  const sdBurst = stddev(burstLengths);
+
+  // ── Revision stats ──
+  const backspaceRate = totalKeys > 0 ? (nBackspace/totalKeys)*100 : 0;
+  const deleteRate = totalKeys > 0 ? (nDelete/totalKeys)*100 : 0;
+  const revisionRate = totalKeys > 0 ? ((nBackspace+nDelete)/totalKeys)*100 : 0;
+  const navRate = totalKeys > 0 ? ((nArrow+nNav)/totalKeys)*100 : 0;  // cursor movement = possible non-linear editing
+
+  // ── Hold time (alpha keys only) ──
+  const holdTimes = ups
+    .filter(e=>( e.cat==='alpha_lower'||e.cat==='alpha_upper') && e.hold!==null && e.hold > 0 && e.hold < 500)
+    .map(e=>e.hold);
+  const meanHold = mean(holdTimes);
+  const sdHold = stddev(holdTimes);
+  const medHold = median(holdTimes);
+
+  // ── Letter-transition latency (category-based, content-safe proxy) ──
+  const alphaToAlpha = [];
+  for (let i = 0; i < downs.length - 1; i++) {
+    const a = downs[i], b = downs[i + 1];
+    if ((a.cat === 'alpha_lower' || a.cat === 'alpha_upper') &&
+        (b.cat === 'alpha_lower' || b.cat === 'alpha_upper') &&
+        b.iki !== null) {
+      alphaToAlpha.push(b.iki);
+    }
+  }
+  const meanAlphaAlphaIKI = mean(alphaToAlpha);
+
+  // ── WPM ──
+  const text = document.getElementById('essay-area').value;
+  const wordCount = text.trim().split(/\s+/).filter(w=>w.length>0).length;
+  const sessionMins = totalTime / 60000;
+  const wpm = sessionMins > 0 ? Math.round(wordCount / sessionMins) : 0;
+  const wpmVsBaseline = meta.baselineWPM > 0 ? ((wpm - meta.baselineWPM) / meta.baselineWPM * 100) : null;
+
+  // ── Temporal thirds ──
+  const t1 = totalTime/3, t2 = (2*totalTime)/3;
+  function sliceDowns(lo, hi) { return downs.filter(e=>e.t>=lo && e.t<hi); }
+  function thirdFeatures(sl) {
+    const si = sl.map(e=>e.iki).filter(v=>v!==null&&v<=IKI_OUTLIER_MAX);
+    const bs = sl.filter(e=>e.cat==='backspace').length;
+    const pa = sl.filter(e=>e.iki!==null&&e.iki>PAUSE_THRESHOLD_MS).length;
+    return {
+      meanIKI: r(mean(si)), sdIKI: r(stddev(si)),
+      pauseCount: pa, backspaceCount: bs, keyCount: sl.length
+    };
+  }
+  const third1 = thirdFeatures(sliceDowns(0, t1));
+  const third2 = thirdFeatures(sliceDowns(t1, t2));
+  const third3 = thirdFeatures(sliceDowns(t2, totalTime));
+
+  // ── IKI distribution buckets ──
+  const ikiBuckets = {
+    sub100: ikis.filter(v=>v<100).length,
+    i100_300: ikis.filter(v=>v>=100&&v<300).length,
+    i300_1000: ikis.filter(v=>v>=300&&v<1000).length,
+    i1000_3000: ikis.filter(v=>v>=1000&&v<3000).length,
+    over3000: ikis.filter(v=>v>=3000).length,
+  };
+
+  return {
+    // session info
+    sessionMeta: { ...meta },
+
+    // counts
+    totalKeys, nAlpha, nBackspace, nDelete, nSpace, nSentEnd, nArrow, nNav, tabSwitches, wordCount, wpm, wpmVsBaseline,
+
+    // IKI
+    meanIKI: r(meanIKI), medIKI: r(medIKI), sdIKI: r(sdIKI), varIKI: r(varIKI), cvIKI: r2(cvIKI),
+
+    // pauses
+    nPauses, meanPause: r(meanPause), maxPause: r(maxPause), pauseFreqPer100: r2(pauseFreqPer100), totalPauseTime: r(totalPauseTime), pauseTimeFraction: r2(pauseTimeFraction),
+
+    // pre-sentence
+    preSentPauseCount: preSentPauses.length, meanPreSentPause: r(meanPreSent), medPreSentPause: r(medPreSent),
+
+    // bursts
+    nBursts, meanBurstLen: r2(meanBurst), medBurstLen: r2(medBurst), maxBurstLen: maxBurst, sdBurstLen: r2(sdBurst),
+
+    // revision
+    backspaceRate: r2(backspaceRate), deleteRate: r2(deleteRate), revisionRate: r2(revisionRate), navRate: r2(navRate),
+
+    // hold time
+    meanHoldMs: r(meanHold), medHoldMs: r(medHold), sdHoldMs: r(sdHold), nHoldSamples: holdTimes.length,
+
+    // digraph
+    meanAlphaAlphaIKI: r(meanAlphaAlphaIKI), nAlphaAlphaPairs: alphaToAlpha.length,
+
+    // temporal thirds
+    third1, third2, third3,
+
+    // IKI buckets
+    ikiBuckets,
+
+    // session duration
+    sessionDurationMs: totalTime
+  };
+}
+
+function r(v) { return isNaN(v)||v===null||v===undefined ? null : Math.round(v); }
+function r2(v) { return isNaN(v)||v===null||v===undefined ? null : Math.round(v*100)/100; }
+function mean(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+function median(arr) {
+  if (!arr.length) return 0;
+  const s = [...arr].sort((a,b)=>a-b);
+  const m = Math.floor(s.length/2);
+  return s.length%2 ? s[m] : (s[m-1]+s[m])/2;
+}
+function stddev(arr) {
+  if (arr.length < 2) return 0;
+  const m = mean(arr);
+  return Math.sqrt(arr.reduce((s,v)=>s+Math.pow(v-m,2),0)/(arr.length-1));
+}
+
+// ════════════════════════════════════════════
+//  RENDER RESULTS
+// ════════════════════════════════════════════
+function renderResults(f) {
+  document.getElementById('res-meta-pill').innerHTML = `
+    <span>Participant: <strong>${f.sessionMeta.participantId}</strong></span>
+    <span>Condition: <strong>${COND_LABELS[f.sessionMeta.condition]}</strong></span>
+    <span>Session: <strong>${f.sessionMeta.session}</strong></span>
+    <span>Baseline: <strong>${f.sessionMeta.baselineSkipped ? 'skipped' : `${f.sessionMeta.baselineWPM} WPM`}</strong></span>
+    <span>Words: <strong>${f.wordCount}</strong></span>
+    <span>Duration: <strong>${Math.round(f.sessionDurationMs/60000)} min</strong></span>
+  `;
+
+  cells('rg-core', [
+    { l:'Mean IKI', v:`${f.meanIKI} ms`, s:'avg inter-keystroke interval' },
+    { l:'IKI Std Dev', v:`${f.sdIKI} ms`, s:'engagement rhythm spread' },
+    { l:'IKI CoV', v:f.cvIKI, s:'sd/mean — normalised variance' },
+    { l:'Pre-Sentence Pause', v:`${f.meanPreSentPause} ms`, s:`${f.preSentPauseCount} pauses measured` },
+    { l:'Mean Burst Length', v:f.meanBurstLen, s:`${f.nBursts} bursts total` },
+    { l:'Revision Rate', v:`${f.revisionRate}%`, s:'(backspace+delete)/total keys' },
+    { l:'Pause Freq /100', v:f.pauseFreqPer100, s:`${f.nPauses} pauses >1s` },
+    { l:'WPM', v:f.wpm, s:f.wpmVsBaseline !== null ? `${f.wpmVsBaseline>0?'+':''}${Math.round(f.wpmVsBaseline)}% vs baseline` : '' },
+  ]);
+
+  cells('rg-iki', [
+    { l:'Median IKI', v:`${f.medIKI} ms`, s:'' },
+    { l:'IKI Variance', v:f.varIKI, s:'sample variance' },
+    { l:'<100ms', v:f.ikiBuckets.sub100, s:'rapid key pairs' },
+    { l:'100–300ms', v:f.ikiBuckets.i100_300, s:'fluent typing zone' },
+    { l:'300ms–1s', v:f.ikiBuckets.i300_1000, s:'slight hesitation' },
+    { l:'1s–3s', v:f.ikiBuckets.i1000_3000, s:'notable pause' },
+    { l:'>3s', v:f.ikiBuckets.over3000, s:'long pause' },
+    { l:'Letter-Transition IKI', v:`${f.meanAlphaAlphaIKI} ms`, s:`${f.nAlphaAlphaPairs} transitions` },
+  ]);
+
+  cells('rg-burst', [
+    { l:'Burst Count', v:f.nBursts, s:'' },
+    { l:'Mean Burst Len', v:f.meanBurstLen, s:'keystrokes' },
+    { l:'Median Burst Len', v:f.medBurstLen, s:'' },
+    { l:'Max Burst Len', v:f.maxBurstLen, s:'longest continuous run' },
+    { l:'Burst SD', v:f.sdBurstLen, s:'burst length variability' },
+  ]);
+
+  cells('rg-revision', [
+    { l:'Backspace Rate', v:`${f.backspaceRate}%`, s:`${f.nBackspace} total` },
+    { l:'Delete Rate', v:`${f.deleteRate}%`, s:`${f.nDelete} total` },
+    { l:'Nav Key Rate', v:`${f.navRate}%`, s:'arrows+nav keys' },
+    { l:'Total Pauses', v:f.nPauses, s:'>1s threshold' },
+    { l:'Mean Pause', v:`${f.meanPause} ms`, s:'thinking pause duration' },
+    { l:'Max Pause', v:`${f.maxPause} ms`, s:'' },
+    { l:'Pause Time %', v:`${Math.round(f.pauseTimeFraction*100)}%`, s:'of total session' },
+    { l:'Tab Switches', v:f.tabSwitches, s:'tab hidden events' },
+  ]);
+
+  cells('rg-thirds', [
+    { l:'T1 Mean IKI', v:`${f.third1.meanIKI} ms`, s:`${f.third1.keyCount} keys` },
+    { l:'T1 Pauses', v:f.third1.pauseCount, s:'first third' },
+    { l:'T1 Backspaces', v:f.third1.backspaceCount, s:'' },
+    { l:'T2 Mean IKI', v:`${f.third2.meanIKI} ms`, s:`${f.third2.keyCount} keys` },
+    { l:'T2 Pauses', v:f.third2.pauseCount, s:'middle third' },
+    { l:'T2 Backspaces', v:f.third2.backspaceCount, s:'' },
+    { l:'T3 Mean IKI', v:`${f.third3.meanIKI} ms`, s:`${f.third3.keyCount} keys` },
+    { l:'T3 Pauses', v:f.third3.pauseCount, s:'final third' },
+    { l:'T3 Backspaces', v:f.third3.backspaceCount, s:'' },
+  ]);
+
+  cells('rg-hold', [
+    { l:'Mean Hold Time', v:`${f.meanHoldMs} ms`, s:'alpha keys' },
+    { l:'Median Hold Time', v:`${f.medHoldMs} ms`, s:'' },
+    { l:'Hold SD', v:`${f.sdHoldMs} ms`, s:'' },
+    { l:'Hold Samples', v:f.nHoldSamples, s:'valid keyup events' },
+  ]);
+
+  cells('rg-digraph', [
+    { l:'Letter→Letter IKI', v:`${f.meanAlphaAlphaIKI} ms`, s:'content-safe letter-transition proxy' },
+    { l:'Transitions Sampled', v:f.nAlphaAlphaPairs, s:'' },
+  ]);
+
+  cells('rg-meta', [
+    { l:'Keyboard', v:f.sessionMeta.keyboardType, s:'' },
+    { l:'Language', v:f.sessionMeta.primaryLanguage, s:'' },
+    { l:'Baseline WPM', v:(f.sessionMeta.baselineSkipped ? 'skipped' : f.sessionMeta.baselineWPM), s:'typing speed covariate' },
+    { l:'Total Keys', v:f.totalKeys, s:'' },
+    { l:'Alpha Keys', v:f.nAlpha, s:'' },
+    { l:'Space Keys', v:f.nSpace, s:'' },
+    { l:'Sentence Ends', v:f.nSentEnd, s:'. ? !' },
+    { l:'Collected At', v:new Date(f.sessionMeta.collectedAt).toLocaleTimeString(), s:'' },
+  ]);
+
+  document.getElementById('raw-out').textContent =
+    JSON.stringify(events.slice(0,100), null, 2) + `\n\n... (${events.length} total events)`;
+
+  // store for export
+  window._lastFeatures = f;
+}
+
+function cells(id, data) {
+  document.getElementById(id).innerHTML = data.map(c => `
+    <div class="res-cell">
+      <div class="res-lbl">${c.l}</div>
+      <div class="res-val">${c.v ?? '—'}</div>
+      ${c.s ? `<div class="res-sub">${c.s}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════════════════
+//  EXPORT
+// ════════════════════════════════════════════
+function exportCSV() {
+  const f = window._lastFeatures;
+  const downs = events.filter(e=>e.type==='D');
+  const hdr = 'event_index,elapsed_ms,key_category,iki_ms,iki_raw_ms,pause_flag,burst_position,cumulative_keys';
+  const rows = downs.map((e,i)=>[
+    i, e.t, e.cat, e.iki??'', e.rawIki??'', e.pauseFlag??0, e.burstPos??'', e.cumKeys??''
+  ].join(','));
+  const fname = `cogtype_${f.sessionMeta.participantId}_S${f.sessionMeta.session}_${f.sessionMeta.condition}`;
+  dl([hdr,...rows].join('\n'), fname+'.csv', 'text/csv');
+}
+
+function exportJSON() {
+  const f = window._lastFeatures;
+  const out = { meta: f.sessionMeta, features: f, events };
+  const fname = `cogtype_${f.sessionMeta.participantId}_S${f.sessionMeta.session}_${f.sessionMeta.condition}`;
+  dl(JSON.stringify(out, null, 2), fname+'.json', 'application/json');
+}
+
+function dl(content, name, type) {
+  const blobUrl = URL.createObjectURL(new Blob([content], { type }));
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+}
+
+function toggleRaw() {
+  const el = document.getElementById('raw-out');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function newSession() {
+  clearInterval(timerInt);
+  clearInterval(liveInt);
+  clearInterval(autoSaveInt);
+  isWriting = false;
+  hasEnded = false;
+  sessionStorage.removeItem('cogtype_recovery');
+  keyDownMap = new Map();
+  events = [];
+  burstLengths = [];
+  lastKeyDownTime = null;
+  document.getElementById('essay-area').value = '';
+  goTo('screen-setup');
+  setStatus('', 'idle');
+}
+
+function setStatus(cls, txt) {
+  document.getElementById('status-dot').className = 'dot ' + cls;
+  document.getElementById('status-txt').textContent = txt;
+}
+
+// ════════════════════════════════════════════
+//  SKIP PASSCODE
+// ════════════════════════════════════════════
+const SKIP_PASSCODE = 'cogtype2025'; // convenience gate only; not true security on a static site
+
+function openSkipModal() {
+  document.getElementById('skip-passcode-input').value = '';
+  document.getElementById('skip-error').textContent = '';
+  const modal = document.getElementById('skip-modal');
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('skip-passcode-input').focus(), 50);
+}
+
+function closeSkipModal() {
+  document.getElementById('skip-modal').style.display = 'none';
+}
+
+function attemptSkip() {
+  const val = document.getElementById('skip-passcode-input').value;
+  if (val === SKIP_PASSCODE) {
+    closeSkipModal();
+    meta.baselineWPM = null;
+    meta.baselineSkipped = true;
+    // fill instructions screen as if baseline passed
+    document.getElementById('i-pid').textContent = meta.participantId;
+    document.getElementById('i-cond').textContent = COND_LABELS[meta.condition];
+    document.getElementById('i-wpm').textContent = 'skipped';
+    document.getElementById('i-dur').textContent = meta.durationMinutes;
+    const instrMap = {
+      brain: `<div class="info-box"><strong>Brain-Only condition.</strong> Write your essay using only your own knowledge and memory. Do not open any other browser tabs. Do not use a search engine. Do not use any AI tool.</div>`,
+      search: `<div class="info-box"><strong>Search Engine condition.</strong> You may use a search engine (Google, Bing, etc.) to look up information. Do not use any AI tools.</div>`,
+      llm: `<div class="info-box"><strong>LLM-Assisted condition.</strong> You may use any AI language model however you like. There are no restrictions. Work naturally.</div>`
+    };
+    document.getElementById('cond-instructions').innerHTML = instrMap[meta.condition];
+    goTo('screen-instructions');
+  } else {
+    document.getElementById('skip-error').textContent = 'Incorrect passcode.';
+    document.getElementById('skip-passcode-input').value = '';
+    document.getElementById('skip-passcode-input').focus();
+  }
+}
+
+// close modal on backdrop click
+document.addEventListener('click', e => {
+  const modal = document.getElementById('skip-modal');
+  if (e.target === modal) closeSkipModal();
+});
+</script>
+</body>
+</html>
