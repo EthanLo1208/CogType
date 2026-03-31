@@ -120,14 +120,56 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
   font-size: 14px; line-height: 1.8; color: var(--text);
   font-family: var(--mono); letter-spacing: 0.01em;
   user-select: none;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
-.baseline-area {
-  width: 100%; min-height: 120px; padding: 14px 16px;
-  border: 1px solid var(--border); border-radius: 3px;
-  font-family: var(--mono); font-size: 14px; line-height: 1.75;
-  resize: none; background: var(--surface); color: var(--text); outline: none;
+.baseline-passage .char.correct { color: var(--green); }
+.baseline-passage .char.current { background: rgba(41, 128, 185, 0.12); border-bottom: 2px solid var(--blue); }
+.baseline-passage .char.pending { color: var(--muted); }
+.baseline-passage .char.locked { color: var(--red); background: rgba(192, 57, 43, 0.08); }
+.baseline-passage .char.incorrect { color: var(--red); background: rgba(192, 57, 43, 0.12); }
+.baseline-mini-stats {
+  display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:10px; margin-top:14px;
 }
-.baseline-area:focus { border-color: var(--accent); }
+@media (max-width: 700px) { .baseline-mini-stats { grid-template-columns: 1fr 1fr; } }
+.baseline-mini-card {
+  background: var(--bg); border:1px solid var(--border); border-radius:3px; padding:10px 12px;
+}
+.baseline-mini-card .k { font-family: var(--mono); font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px; }
+.baseline-mini-card .v { font-family: var(--mono); font-size:16px; font-weight:500; }
+.baseline-capture {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+  left: -9999px;
+  top: 0;
+}
+.baseline-passage {
+  position: relative;
+  cursor: text;
+  transition: box-shadow 0.16s ease, transform 0.08s ease, border-color 0.16s ease;
+}
+.baseline-passage.focused {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(26, 25, 23, 0.05);
+}
+.baseline-passage.error-flash {
+  border-color: rgba(192, 57, 43, 0.65);
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.14), 0 0 16px rgba(192, 57, 43, 0.12);
+}
+.baseline-passage.shake {
+  animation: baselineShake 0.18s linear 1;
+}
+@keyframes baselineShake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+  100% { transform: translateX(0); }
+}
 .wpm-meter {
   display: flex; align-items: center; gap: 12px; margin-top: 12px;
 }
@@ -363,12 +405,18 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
       <span>Session: <strong id="b-sess">—</strong></span>
     </div>
 
-    <div class="baseline-passage" id="baseline-passage">
+    <label for="baseline-capture">Type the passage above:</label>
+    <div class="baseline-passage" id="baseline-passage" tabindex="0" aria-label="Typing passage area">
       The relationship between technology and human cognition has become one of the most debated topics in modern psychology. As digital tools grow more capable, researchers are asking whether reliance on these tools changes the way people think, plan, and remember. Some argue that offloading cognitive tasks to machines frees up mental resources for higher-order thinking. Others contend that the practice erodes the very skills it replaces.
     </div>
+    <input id="baseline-capture" class="baseline-capture" type="text" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off" aria-hidden="true">
 
-    <label for="baseline-input">Type the passage above:</label>
-    <textarea id="baseline-input" class="baseline-area" placeholder="Start typing here…" rows="5" spellcheck="false"></textarea>
+    <div class="baseline-mini-stats">
+      <div class="baseline-mini-card"><div class="k">Net WPM</div><div class="v" id="baseline-net-wpm">0</div></div>
+      <div class="baseline-mini-card"><div class="k">Raw WPM</div><div class="v" id="baseline-raw-wpm">0</div></div>
+      <div class="baseline-mini-card"><div class="k">Accuracy</div><div class="v" id="baseline-acc">0%</div></div>
+      <div class="baseline-mini-card"><div class="k">Progress</div><div class="v" id="baseline-progress">0%</div></div>
+    </div>
 
     <div class="wpm-meter">
       <div>
@@ -545,6 +593,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 //  CONSTANTS
 // ════════════════════════════════════════════
 const MIN_WPM = 25;
+const BASELINE_MIN_COMPLETION = 0.98;
+const BASELINE_MIN_ACCURACY = 0.9;
+const BASELINE_MIN_ELAPSED_MS = 10000;
+const BASELINE_REPEAT_STREAK_FLAG = 7;
 const PAUSE_THRESHOLD_MS = 1000;       // pause > this counts as a thinking pause
 const BURST_GAP_MS = 2000;             // IKI > this breaks a burst
 const PRE_SENT_MIN_MS = 300;           // minimum for a pre-sentence pause to count
@@ -589,7 +641,13 @@ const CONSENT_CONFIG = {
   voluntary: 'Participation is voluntary. You may stop at any time without penalty and may decline to answer any question.',
   withdrawal: 'If you withdraw before submitting, tell the researcher immediately so they can follow your approved protocol for deleting or retaining partial data.',
   questions: 'Questions about the study should go to the researcher. Questions about your rights as a participant should go to the IRB / ethics office.',
-  adultStatement: 'By agreeing, you confirm that you are authorized to consent under the approved protocol.'
+  adultStatement: 'By agreeing, you confirm that you are authorized to consent under the approved protocol.',
+  termsOfService: [
+    'This app is for supervised research use only and should be used only by the participant assigned to the session.',
+    'Do not attempt to bypass, automate, or manipulate the typing tasks, including with key spam, paste, macros, or external scripts.',
+    'The participant is responsible for using the device normally and for reporting accidental interruptions to the researcher.',
+    'Session files should be exported only to the researcher or approved study workflow.'
+  ]
 };
 
 
@@ -621,6 +679,12 @@ let cntKeys = 0, cntBackspace = 0, cntPause = 0, cntBursts = 0;
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if (id !== 'screen-baseline') {
+    document.getElementById('baseline-passage')?.classList.remove('focused');
+  }
+  if (id === 'screen-baseline') {
+    setTimeout(focusBaselineCapture, 0);
+  }
   // phase indicator
   const map = { 'screen-setup':0, 'screen-baseline':1, 'screen-instructions':1, 'screen-rejected':1, 'screen-write':2, 'screen-results':3 };
   const phase = map[id] ?? 0;
@@ -666,80 +730,283 @@ function setupDone() {
 // ════════════════════════════════════════════
 let baselineStart = null;
 let baselineActive = false;
+let baselineMetrics = null;
 
 function resetBaseline() {
-  document.getElementById('baseline-input').value = '';
+  const capture = document.getElementById('baseline-capture');
+  if (capture) capture.value = '';
   document.getElementById('wpm-live').textContent = '—';
   document.getElementById('wpm-bar').style.width = '0%';
   document.getElementById('wpm-bar').style.background = 'var(--accent)';
   document.getElementById('baseline-feedback').innerHTML = '';
   document.getElementById('baseline-next-btn').disabled = true;
+  document.getElementById('baseline-net-wpm').textContent = '0';
+  document.getElementById('baseline-raw-wpm').textContent = '0';
+  document.getElementById('baseline-acc').textContent = '0%';
+  document.getElementById('baseline-progress').textContent = '0%';
   baselineStart = null; baselineActive = false; baselineWPM = 0;
-  document.getElementById('baseline-input').focus();
+  baselineMetrics = makeEmptyBaselineMetrics();
+  renderBaselinePassage('', baselineMetrics);
+  focusBaselineCapture();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const inp = document.getElementById('baseline-input');
-  if (inp) {
-    inp.addEventListener('input', handleBaselineInput);
-    inp.addEventListener('keydown', () => {
-      if (!baselineStart) { baselineStart = Date.now(); baselineActive = true; }
+  const capture = document.getElementById('baseline-capture');
+  const passage = document.getElementById('baseline-passage');
+  if (capture && passage) {
+    capture.addEventListener('keydown', handleBaselineKeydown);
+    capture.addEventListener('paste', handleBaselinePaste);
+    capture.addEventListener('drop', handleBaselinePaste);
+    capture.addEventListener('blur', () => {
+      if (document.getElementById('screen-baseline').classList.contains('active')) {
+        setTimeout(focusBaselineCapture, 0);
+      }
+    });
+    passage.addEventListener('click', focusBaselineCapture);
+    passage.addEventListener('mousedown', e => {
+      e.preventDefault();
+      focusBaselineCapture();
     });
   }
   bindGlobalListeners();
   restoreDraftIfAvailable();
   renderConsentModal();
   enforceConsentGate();
+  renderBaselinePassage('', makeEmptyBaselineMetrics());
 });
 
 function handleBaselineInput() {
   if (!baselineStart) return;
-  const val = document.getElementById('baseline-input').value;
-  const words = val.trim().split(/\s+/).filter(w => w.length > 0).length;
-  const elapsed = (Date.now() - baselineStart) / 60000;
-  const wpm = elapsed > 0.05 ? Math.round(words / elapsed) : 0;
+  const capture = document.getElementById('baseline-capture');
+  if (!capture) return;
+  capture.value = '';
+
+  const elapsedMs = Date.now() - baselineStart;
+  const metrics = evaluateBaselineAttempt(baselineMetrics.typed, elapsedMs);
+  baselineMetrics = metrics;
+  baselineWPM = metrics.netWPM;
+
+  renderBaselinePassage(metrics.typed, metrics);
+  renderBaselineStats(metrics);
 
   const wpmEl = document.getElementById('wpm-live');
   const barEl = document.getElementById('wpm-bar');
-  wpmEl.textContent = wpm;
+  wpmEl.textContent = metrics.netWPM;
 
-  const pct = Math.min((wpm / 100) * 100, 100);
+  const pct = Math.min((metrics.netWPM / 100) * 100, 100);
   barEl.style.width = pct + '%';
 
-  if (wpm < MIN_WPM) {
-    wpmEl.style.color = 'var(--red)';
-    barEl.style.background = 'var(--red)';
-  } else if (wpm < 50) {
-    wpmEl.style.color = 'var(--orange)';
-    barEl.style.background = 'var(--orange)';
-  } else {
+  if (metrics.isEligible) {
     wpmEl.style.color = 'var(--green)';
     barEl.style.background = 'var(--green)';
+  } else if (metrics.netWPM < MIN_WPM || metrics.hasSuspicion) {
+    wpmEl.style.color = 'var(--red)';
+    barEl.style.background = 'var(--red)';
+  } else {
+    wpmEl.style.color = 'var(--orange)';
+    barEl.style.background = 'var(--orange)';
   }
 
-  // check if passage mostly done (typed at least 70% of word count)
-  const targetWords = BASELINE_TEXT.trim().split(/\s+/).length;
-  if (words >= Math.floor(targetWords * 0.7)) {
-    baselineWPM = wpm;
-    showBaselineResult(wpm);
+  if (metrics.progress >= 0.6 || metrics.hasSuspicion || metrics.isEligible) {
+    showBaselineResult(metrics);
   }
 }
 
-function showBaselineResult(wpm) {
+function handleBaselineKeydown(e) {
+  if (!baselineStart && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key.length === 1 || e.key === 'Backspace')) {
+    baselineStart = Date.now();
+    baselineActive = true;
+  }
+
+  if (e.ctrlKey || e.metaKey) {
+    if (['v','x','a'].includes((e.key || '').toLowerCase())) {
+      handleBaselinePaste(e);
+      return;
+    }
+  }
+
+  if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Tab'].includes(e.key)) {
+    e.preventDefault();
+    focusBaselineCapture();
+    return;
+  }
+
+  if (e.repeat && baselineMetrics) {
+    baselineMetrics.repeatKeyEvents = (baselineMetrics.repeatKeyEvents || 0) + 1;
+  }
+
+  if (e.key === 'Backspace') {
+    e.preventDefault();
+    if (baselineMetrics.typed.length > 0) {
+      baselineMetrics.typed = baselineMetrics.typed.slice(0, -1);
+      baselineMetrics.lastIncorrect = false;
+      handleBaselineInput();
+    } else {
+      flashBaselineError();
+    }
+    return;
+  }
+
+  if (e.key.length !== 1 || e.altKey) {
+    return;
+  }
+
+  e.preventDefault();
+
+  const expectedIndex = baselineMetrics.correctChars || 0;
+  const expectedChar = BASELINE_TEXT[expectedIndex];
+  if (!expectedChar) return;
+
+  if (e.key === expectedChar) {
+    baselineMetrics.typed += e.key;
+    baselineMetrics.lastIncorrect = false;
+    handleBaselineInput();
+  } else {
+    baselineMetrics.lastIncorrect = true;
+    baselineMetrics.lastWrongKey = e.key;
+    flashBaselineError();
+    renderBaselinePassage(baselineMetrics.typed, baselineMetrics);
+    showBaselineResult(evaluateBaselineAttempt(baselineMetrics.typed, baselineStart ? (Date.now() - baselineStart) : 0));
+  }
+
+  focusBaselineCapture();
+}
+
+function handleBaselinePaste(e) {
+  e.preventDefault();
+  if (!baselineMetrics) baselineMetrics = makeEmptyBaselineMetrics();
+  baselineMetrics.pasteAttempted = true;
+  flashBaselineError();
+  showBaselineResult(evaluateBaselineAttempt(baselineMetrics.typed, baselineStart ? (Date.now() - baselineStart) : 0));
+}
+
+function focusBaselineCapture() {
+  const capture = document.getElementById('baseline-capture');
+  const passage = document.getElementById('baseline-passage');
+  if (passage) passage.classList.add('focused');
+  if (capture) {
+    capture.focus({ preventScroll: true });
+    capture.value = '';
+    try { capture.setSelectionRange(0, 0); } catch (err) {}
+  }
+}
+
+function flashBaselineError() {
+  const passage = document.getElementById('baseline-passage');
+  if (!passage) return;
+  passage.classList.remove('error-flash', 'shake');
+  void passage.offsetWidth;
+  passage.classList.add('error-flash', 'shake');
+  clearTimeout(flashBaselineError._timer);
+  flashBaselineError._timer = setTimeout(() => {
+    passage.classList.remove('error-flash', 'shake');
+  }, 220);
+}
+
+function normalizeBaselineText(text) {
+  return (text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+}
+
+function makeEmptyBaselineMetrics() {
+  return {
+    typed: '',
+    netWPM: 0, rawWPM: 0, accuracy: 0, progress: 0, correctChars: 0, rawChars: 0,
+    elapsedMs: 0, mismatchCount: 0, pasteAttempted: false, repeatKeyEvents: 0,
+    suspiciousRepeatStreak: false, hasSuspicion: false, isEligible: false,
+    lastIncorrect: false, lastWrongKey: ''
+  };
+}
+
+function evaluateBaselineAttempt(typed, elapsedMs) {
+  const target = BASELINE_TEXT;
+  let correctChars = 0;
+  const max = Math.min(typed.length, target.length);
+  while (correctChars < max && typed[correctChars] === target[correctChars]) correctChars++;
+
+  const mismatchCount = Math.max(0, typed.length - correctChars);
+  const progress = target.length ? correctChars / target.length : 0;
+  const accuracy = typed.length ? correctChars / typed.length : 1;
+  const elapsedMin = elapsedMs / 60000;
+  const netWPM = elapsedMin > 0 ? Math.round((correctChars / 5) / elapsedMin) : 0;
+  const rawWPM = elapsedMin > 0 ? Math.round((typed.length / 5) / elapsedMin) : 0;
+  const suspiciousRepeatStreak = /(.)\1{6,}/.test(typed);
+  const pasteAttempted = !!(baselineMetrics && baselineMetrics.pasteAttempted);
+  const repeatKeyEvents = baselineMetrics ? (baselineMetrics.repeatKeyEvents || 0) : 0;
+  const hasSuspicion = pasteAttempted || suspiciousRepeatStreak || repeatKeyEvents > 10;
+  const isEligible = progress >= BASELINE_MIN_COMPLETION
+    && accuracy >= BASELINE_MIN_ACCURACY
+    && elapsedMs >= BASELINE_MIN_ELAPSED_MS
+    && netWPM >= MIN_WPM
+    && !hasSuspicion;
+
+  return {
+    typed,
+    netWPM, rawWPM, accuracy, progress, correctChars, rawChars: typed.length, elapsedMs, mismatchCount,
+    pasteAttempted, repeatKeyEvents, suspiciousRepeatStreak, hasSuspicion, isEligible,
+    lastIncorrect: baselineMetrics ? !!baselineMetrics.lastIncorrect : false,
+    lastWrongKey: baselineMetrics ? (baselineMetrics.lastWrongKey || '') : ''
+  };
+}
+
+function renderBaselineStats(metrics) {
+  document.getElementById('baseline-net-wpm').textContent = metrics.netWPM;
+  document.getElementById('baseline-raw-wpm').textContent = metrics.rawWPM;
+  document.getElementById('baseline-acc').textContent = `${Math.round(metrics.accuracy * 100)}%`;
+  document.getElementById('baseline-progress').textContent = `${Math.round(metrics.progress * 100)}%`;
+}
+
+function renderBaselinePassage(typed = '', metrics = null) {
+  const target = BASELINE_TEXT;
+  let correctChars = metrics ? metrics.correctChars : 0;
+  let out = '';
+  for (let i = 0; i < target.length; i++) {
+    const ch = escapeHtml(target[i]);
+    if (i < correctChars) out += `<span class="char correct">${ch}</span>`;
+    else if (i === correctChars && metrics && metrics.lastIncorrect) out += `<span class="char incorrect">${ch}</span>`;
+    else if (i === correctChars) out += `<span class="char current">${ch}</span>`;
+    else out += `<span class="char pending">${ch}</span>`;
+  }
+  document.getElementById('baseline-passage').innerHTML = out;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function showBaselineResult(result = baselineMetrics) {
+  if (!result) return;
+  baselineMetrics = result;
   const fb = document.getElementById('baseline-feedback');
   const btn = document.getElementById('baseline-next-btn');
-  if (wpm < MIN_WPM) {
-    fb.innerHTML = `<div class="info-box danger"><strong>Below minimum threshold (${wpm} WPM).</strong> This participant types below 25 WPM. They do not qualify for this study. Click "Retake" to allow one retry, or proceed to the rejection screen.</div>`;
-    btn.textContent = 'View Rejection →';
-    btn.classList.add('danger');
-    btn.disabled = false;
-    btn.onclick = () => showRejected(wpm);
-  } else {
-    fb.innerHTML = `<div class="info-box ok"><strong>Eligible (${wpm} WPM).</strong> Baseline recorded. This will be stored as a covariate in the exported data.</div>`;
+
+  const reasons = [];
+  if (result.progress < BASELINE_MIN_COMPLETION) reasons.push(`complete at least ${Math.round(BASELINE_MIN_COMPLETION * 100)}% of the passage in order`);
+  if (result.accuracy < BASELINE_MIN_ACCURACY) reasons.push(`keep accuracy at ${Math.round(BASELINE_MIN_ACCURACY * 100)}% or higher`);
+  if (result.netWPM < MIN_WPM) reasons.push(`reach at least ${MIN_WPM} net WPM`);
+  if (result.elapsedMs < BASELINE_MIN_ELAPSED_MS) reasons.push(`spend at least ${Math.round(BASELINE_MIN_ELAPSED_MS / 1000)} seconds on the passage`);
+  if (result.pasteAttempted) reasons.push('pasting is blocked for the baseline test');
+  if (result.suspiciousRepeatStreak) reasons.push('repeated-character spam was detected');
+  if (result.repeatKeyEvents > 10) reasons.push('held-key repeat events were detected');
+
+  if (result.isEligible) {
+    fb.innerHTML = `<div class="info-box ok"><strong>Eligible (${result.netWPM} net WPM).</strong> Baseline recorded using correct character progress, not raw key spam. Accuracy: ${Math.round(result.accuracy * 100)}%. Progress: ${Math.round(result.progress * 100)}%.</div>`;
     btn.textContent = 'Continue to Instructions →';
     btn.classList.remove('danger');
     btn.disabled = false;
     btn.onclick = baselineDone;
+  } else {
+    const detail = reasons.length ? `Requirements not met yet: ${reasons.join(' · ')}.` : 'Keep typing naturally to finish the baseline.';
+    const severe = result.hasSuspicion || (result.progress >= BASELINE_MIN_COMPLETION && result.netWPM < MIN_WPM);
+    fb.innerHTML = `<div class="info-box ${severe ? 'danger' : 'warn'}"><strong>${severe ? 'Baseline not valid yet.' : 'Keep going.'}</strong> Net WPM is based only on correct in-order characters. ${detail}</div>`;
+    btn.textContent = severe ? 'View Rejection →' : 'Continue to Instructions →';
+    btn.classList.toggle('danger', severe);
+    btn.disabled = !severe;
+    btn.onclick = severe ? () => showRejected(result.netWPM) : baselineDone;
   }
 }
 
@@ -751,6 +1018,7 @@ function showRejected(wpm) {
 
 function baselineDone() {
   meta.baselineWPM = baselineWPM;
+  meta.baselineMetrics = baselineMetrics ? { ...baselineMetrics } : null;
 
   // Instructions screen
   document.getElementById('i-pid').textContent = meta.participantId;
@@ -1067,10 +1335,12 @@ function renderConsentModal() {
     <p><strong>Voluntary participation.</strong> ${CONSENT_CONFIG.voluntary}</p>
     <p><strong>Withdrawal.</strong> ${CONSENT_CONFIG.withdrawal}</p>
     <p><strong>Questions and participant rights.</strong> ${CONSENT_CONFIG.questions}</p>
+    <p><strong>Terms of use.</strong></p>
+    <ul>${CONSENT_CONFIG.termsOfService.map(x => `<li>${x}</li>`).join('')}</ul>
     <div class="consent-check">
       <input id="consent-checkbox" type="checkbox" onchange="updateConsentButton()">
       <label for="consent-checkbox" style="margin:0; font-size:13px; text-transform:none; letter-spacing:0; font-weight:400; color:var(--text);">
-        I have read this information, had the chance to ask questions if applicable, and voluntarily agree to participate. ${CONSENT_CONFIG.adultStatement}
+        I have read the consent information and terms of use, had the chance to ask questions if applicable, and voluntarily agree to participate. ${CONSENT_CONFIG.adultStatement}
       </label>
     </div>
     <p class="subtle" style="margin-top:12px;">Consent version: ${CONSENT_VERSION}</p>
@@ -1433,6 +1703,7 @@ function renderResults(f) {
     { l:'Keyboard', v:f.sessionMeta.keyboardType, s:'' },
     { l:'Language', v:f.sessionMeta.primaryLanguage, s:'' },
     { l:'Baseline WPM', v:(f.sessionMeta.baselineSkipped ? 'skipped' : f.sessionMeta.baselineWPM), s:'typing speed covariate' },
+    { l:'Baseline Accuracy', v:(f.sessionMeta.baselineMetrics ? `${Math.round((f.sessionMeta.baselineMetrics.accuracy || 0) * 100)}%` : '—'), s:'baseline validity check' },
     { l:'Total Keys', v:f.totalKeys, s:'' },
     { l:'Alpha Keys', v:f.nAlpha, s:'' },
     { l:'Space Keys', v:f.nSpace, s:'' },
