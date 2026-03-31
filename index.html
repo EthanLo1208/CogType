@@ -564,7 +564,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
     <div class="section-title">Revision Behaviour</div>
     <div class="res-grid" id="rg-revision"></div>
 
-    <div class="section-title">Temporal Thirds (IKI Trajectory)</div>
+    <div class="section-title">Rolling Windows (70 Keystrokes)</div>
     <div class="res-grid" id="rg-thirds"></div>
 
     <div class="section-title">Hold Time (Alpha Keys)</div>
@@ -758,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
     capture.addEventListener('paste', handleBaselinePaste);
     capture.addEventListener('drop', handleBaselinePaste);
     capture.addEventListener('blur', () => {
-      if (document.getElementById('screen-baseline').classList.contains('active')) {
+      if (document.getElementById('screen-baseline').classList.contains('active') && !isSkipModalOpen()) {
         setTimeout(focusBaselineCapture, 0);
       }
     });
@@ -880,7 +880,13 @@ function handleBaselinePaste(e) {
   showBaselineResult(evaluateBaselineAttempt(baselineMetrics.typed, baselineStart ? (Date.now() - baselineStart) : 0));
 }
 
+function isSkipModalOpen() {
+  const modal = document.getElementById('skip-modal');
+  return !!(modal && modal.style.display === 'flex');
+}
+
 function focusBaselineCapture() {
+  if (isSkipModalOpen()) return;
   const capture = document.getElementById('baseline-capture');
   const passage = document.getElementById('baseline-passage');
   if (passage) passage.classList.add('focused');
@@ -1542,21 +1548,33 @@ function computeFeatures() {
   const wpm = sessionMins > 0 ? Math.round(wordCount / sessionMins) : 0;
   const wpmVsBaseline = meta.baselineWPM > 0 ? ((wpm - meta.baselineWPM) / meta.baselineWPM * 100) : null;
 
-  // ── Temporal thirds ──
-  const t1 = totalTime/3, t2 = (2*totalTime)/3;
-  function sliceDowns(lo, hi) { return downs.filter(e=>e.t>=lo && e.t<hi); }
-  function thirdFeatures(sl) {
+  // ── Rolling windows (70 keystrokes per window, non-overlapping) ──
+  const ROLLING_WINDOW_KEYS = 70;
+  function windowFeatures(sl, index) {
     const si = sl.map(e=>e.iki).filter(v=>v!==null&&v<=IKI_OUTLIER_MAX);
     const bs = sl.filter(e=>e.cat==='backspace').length;
     const pa = sl.filter(e=>e.iki!==null&&e.iki>PAUSE_THRESHOLD_MS).length;
     return {
-      meanIKI: r(mean(si)), sdIKI: r(stddev(si)),
-      pauseCount: pa, backspaceCount: bs, keyCount: sl.length
+      label: `T${index + 1}`,
+      windowIndex: index + 1,
+      startKey: (index * ROLLING_WINDOW_KEYS) + 1,
+      endKey: (index * ROLLING_WINDOW_KEYS) + sl.length,
+      meanIKI: r(mean(si)),
+      sdIKI: r(stddev(si)),
+      pauseCount: pa,
+      backspaceCount: bs,
+      keyCount: sl.length
     };
   }
-  const third1 = thirdFeatures(sliceDowns(0, t1));
-  const third2 = thirdFeatures(sliceDowns(t1, t2));
-  const third3 = thirdFeatures(sliceDowns(t2, totalTime));
+  const rollingWindows = [];
+  for (let i = 0; i < downs.length; i += ROLLING_WINDOW_KEYS) {
+    const sl = downs.slice(i, i + ROLLING_WINDOW_KEYS);
+    if (!sl.length) continue;
+    rollingWindows.push(windowFeatures(sl, rollingWindows.length));
+  }
+  const third1 = rollingWindows[0] || windowFeatures([], 0);
+  const third2 = rollingWindows[1] || windowFeatures([], 1);
+  const third3 = rollingWindows[2] || windowFeatures([], 2);
 
   // ── IKI distribution buckets ──
   const ikiBuckets = {
@@ -1595,8 +1613,8 @@ function computeFeatures() {
     // digraph
     meanAlphaAlphaIKI: r(meanAlphaAlphaIKI), nAlphaAlphaPairs: alphaToAlpha.length,
 
-    // temporal thirds
-    third1, third2, third3,
+    // rolling windows (kept third1/2/3 for compatibility with existing exports)
+    third1, third2, third3, rollingWindows,
 
     // IKI buckets
     ikiBuckets,
@@ -1675,17 +1693,11 @@ function renderResults(f) {
     { l:'Tab Switches', v:f.tabSwitches, s:'tab hidden events' },
   ]);
 
-  cells('rg-thirds', [
-    { l:'T1 Mean IKI', v:`${f.third1.meanIKI} ms`, s:`${f.third1.keyCount} keys` },
-    { l:'T1 Pauses', v:f.third1.pauseCount, s:'first third' },
-    { l:'T1 Backspaces', v:f.third1.backspaceCount, s:'' },
-    { l:'T2 Mean IKI', v:`${f.third2.meanIKI} ms`, s:`${f.third2.keyCount} keys` },
-    { l:'T2 Pauses', v:f.third2.pauseCount, s:'middle third' },
-    { l:'T2 Backspaces', v:f.third2.backspaceCount, s:'' },
-    { l:'T3 Mean IKI', v:`${f.third3.meanIKI} ms`, s:`${f.third3.keyCount} keys` },
-    { l:'T3 Pauses', v:f.third3.pauseCount, s:'final third' },
-    { l:'T3 Backspaces', v:f.third3.backspaceCount, s:'' },
-  ]);
+  cells('rg-thirds', (f.rollingWindows || []).flatMap(w => [
+    { l:`${w.label} Mean IKI`, v:`${w.meanIKI} ms`, s:`keys ${w.startKey}–${w.endKey} · ${w.keyCount} keys` },
+    { l:`${w.label} Pauses`, v:w.pauseCount, s:`70-key window` },
+    { l:`${w.label} Backspaces`, v:w.backspaceCount, s:'' },
+  ]));
 
   cells('rg-hold', [
     { l:'Mean Hold Time', v:`${f.meanHoldMs} ms`, s:'alpha keys' },
