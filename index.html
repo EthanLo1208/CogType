@@ -3,297 +3,233 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CogType v2 — Research Tool</title>
+<title>CogType v3 — Research Tool</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
 :root {
-  --bg: #f5f4f0;
-  --surface: #ffffff;
-  --border: #d8d5ce;
-  --text: #1a1917;
-  --muted: #7a7770;
-  --accent: #1a1917;
-  --soft: #e8e5de;
-  --red: #c0392b;
-  --orange: #e67e22;
-  --green: #27ae60;
-  --blue: #2980b9;
-  --mono: 'IBM Plex Mono', monospace;
-  --sans: 'IBM Plex Sans', sans-serif;
+  --bg:#f5f4f0; --surface:#fff; --border:#d8d5ce; --text:#1a1917;
+  --muted:#7a7770; --accent:#1a1917; --soft:#e8e5de;
+  --red:#c0392b; --orange:#e67e22; --green:#27ae60; --blue:#2980b9; --purple:#7d3c98;
+  --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
 
 /* HEADER */
-header {
-  border-bottom: 1px solid var(--border);
-  padding: 13px 32px;
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--surface);
-  position: sticky; top: 0; z-index: 100;
-}
-.logo { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; }
-.logo span { color: var(--muted); }
-.header-right { display: flex; align-items: center; gap: 16px; }
-.phase-indicator {
-  display: flex; gap: 0;
-  font-family: var(--mono); font-size: 10px;
-  border: 1px solid var(--border); border-radius: 3px; overflow: hidden;
-}
-.phase-step {
-  padding: 5px 12px; color: var(--muted);
-  border-right: 1px solid var(--border);
-  transition: all 0.2s;
-}
-.phase-step:last-child { border-right: none; }
-.phase-step.active { background: var(--accent); color: #fff; }
-.phase-step.done { background: var(--soft); color: var(--text); }
-.status-chip { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
-.dot.rec { background: var(--red); animation: blink 1.4s infinite; }
-.dot.ok { background: var(--green); }
-.dot.warn { background: var(--orange); }
-@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+header{border-bottom:1px solid var(--border);padding:13px 32px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:100;}
+.logo{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;}
+.logo span{color:var(--muted);}
+.header-right{display:flex;align-items:center;gap:16px;}
+.phase-indicator{display:flex;font-family:var(--mono);font-size:10px;border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.phase-step{padding:5px 12px;color:var(--muted);border-right:1px solid var(--border);transition:all .2s;}
+.phase-step:last-child{border-right:none;}
+.phase-step.active{background:var(--accent);color:#fff;}
+.phase-step.done{background:var(--soft);color:var(--text);}
+.status-chip{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--muted);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:background .3s;}
+.dot.rec{background:var(--red);animation:blink 1.4s infinite;}
+.dot.ok{background:var(--green);}
+.dot.warn{background:var(--orange);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* SCREENS */
-.screen { display: none; flex: 1; justify-content: center; align-items: flex-start; padding: 44px 24px; }
-.screen.active { display: flex; }
+.screen{display:none;flex:1;justify-content:center;align-items:flex-start;padding:44px 24px;}
+.screen.active{display:flex;}
+#screen-write,#screen-posttask{flex-direction:column;align-items:center;}
 
 /* CARDS */
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 36px 40px; width: 100%; max-width: 560px; }
-.card-wide { max-width: 820px; }
+.card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:36px 40px;width:100%;max-width:560px;}
+.card-wide{max-width:860px;}
+h1{font-size:21px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px;}
+.sub{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:28px;}
 
-h1 { font-size: 21px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 6px; }
-.sub { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 28px; }
+/* FORM */
+label{display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+input,select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:3px;font-family:var(--mono);font-size:13px;background:var(--bg);color:var(--text);margin-bottom:18px;transition:border-color .15s;}
+input:focus,select:focus{outline:none;border-color:var(--accent);}
+input.err{border-color:var(--red);}
 
-label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
-input, select {
-  width: 100%; padding: 9px 12px;
-  border: 1px solid var(--border); border-radius: 3px;
-  font-family: var(--mono); font-size: 13px;
-  background: var(--bg); color: var(--text);
-  margin-bottom: 18px; transition: border-color 0.15s;
-}
-input:focus, select:focus { outline: none; border-color: var(--accent); }
-input.err { border-color: var(--red); }
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:3px;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:500;border:1px solid var(--accent);background:var(--accent);color:#fff;transition:opacity .15s;letter-spacing:.01em;}
+.btn:hover{opacity:.82;}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--border);}
+.btn.ghost:hover{background:var(--soft);}
+.btn.danger{background:var(--red);border-color:var(--red);}
+.btn.success{background:var(--green);border-color:var(--green);}
+.btn-row{display:flex;gap:9px;margin-top:26px;flex-wrap:wrap;}
+hr{border:none;border-top:1px solid var(--border);margin:24px 0;}
 
-.btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 18px; border-radius: 3px; cursor: pointer;
-  font-family: var(--sans); font-size: 13px; font-weight: 500;
-  border: 1px solid var(--accent); background: var(--accent); color: #fff;
-  transition: opacity 0.15s; letter-spacing: 0.01em;
-}
-.btn:hover { opacity: 0.82; }
-.btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.btn.ghost { background: transparent; color: var(--text); border-color: var(--border); }
-.btn.ghost:hover { background: var(--soft); }
-.btn.danger { background: var(--red); border-color: var(--red); }
-.btn.success { background: var(--green); border-color: var(--green); }
-.btn-row { display: flex; gap: 9px; margin-top: 26px; flex-wrap: wrap; }
+/* INFO BOXES */
+.info-box{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:14px 18px;margin-bottom:20px;font-size:13px;line-height:1.6;color:var(--muted);}
+.info-box strong{color:var(--text);font-weight:500;}
+.info-box.warn{border-color:var(--orange);background:#fef9f0;}
+.info-box.danger{border-color:var(--red);background:#fdf0ef;}
+.info-box.ok{border-color:var(--green);background:#f0faf2;}
+.info-box.info{border-color:var(--blue);background:#f0f6fc;}
+.meta-pill{display:flex;flex-wrap:wrap;gap:14px;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:10px 16px;margin-bottom:22px;font-family:var(--mono);font-size:11px;color:var(--muted);}
+.meta-pill strong{color:var(--text);}
 
-hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+/* BADGE */
+.badge{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:2px;border:1px solid var(--border);}
+.badge.brain{background:#d4edda;border-color:#9fd4a9;color:#155724;}
+.badge.search{background:#d1ecf1;border-color:#9adce7;color:#0c5460;}
+.badge.llm{background:#fef3cd;border-color:#f6c85e;color:#856404;}
 
-.info-box {
-  background: var(--bg); border: 1px solid var(--border); border-radius: 3px;
-  padding: 14px 18px; margin-bottom: 20px;
-  font-size: 13px; line-height: 1.6; color: var(--muted);
-}
-.info-box strong { color: var(--text); font-weight: 500; }
-.info-box.warn { border-color: var(--orange); background: #fef9f0; }
-.info-box.danger { border-color: var(--red); background: #fdf0ef; }
-.info-box.ok { border-color: var(--green); background: #f0faf2; }
-
-.meta-pill {
-  display: flex; flex-wrap: wrap; gap: 14px;
-  background: var(--bg); border: 1px solid var(--border); border-radius: 3px;
-  padding: 10px 16px; margin-bottom: 22px;
-  font-family: var(--mono); font-size: 11px; color: var(--muted);
-}
-.meta-pill strong { color: var(--text); }
-
-/* BASELINE SCREEN */
-.baseline-passage {
-  background: var(--soft); border: 1px solid var(--border); border-radius: 3px;
-  padding: 18px 20px; margin-bottom: 16px;
-  font-size: 14px; line-height: 1.8; color: var(--text);
-  font-family: var(--mono); letter-spacing: 0.01em;
-  user-select: none;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.baseline-passage .char.correct { color: var(--green); }
-.baseline-passage .char.current { background: rgba(41, 128, 185, 0.12); border-bottom: 2px solid var(--blue); }
-.baseline-passage .char.pending { color: var(--muted); }
-.baseline-passage .char.locked { color: var(--red); background: rgba(192, 57, 43, 0.08); }
-.baseline-passage .char.incorrect { color: var(--red); background: rgba(192, 57, 43, 0.12); }
-.baseline-mini-stats {
-  display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:10px; margin-top:14px;
-}
-@media (max-width: 700px) { .baseline-mini-stats { grid-template-columns: 1fr 1fr; } }
-.baseline-mini-card {
-  background: var(--bg); border:1px solid var(--border); border-radius:3px; padding:10px 12px;
-}
-.baseline-mini-card .k { font-family: var(--mono); font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px; }
-.baseline-mini-card .v { font-family: var(--mono); font-size:16px; font-weight:500; }
-.baseline-capture {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  width: 1px;
-  height: 1px;
-  left: -9999px;
-  top: 0;
-}
-.baseline-passage {
-  position: relative;
-  cursor: text;
-  transition: box-shadow 0.16s ease, transform 0.08s ease, border-color 0.16s ease;
-}
-.baseline-passage.focused {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(26, 25, 23, 0.05);
-}
-.baseline-passage.error-flash {
-  border-color: rgba(192, 57, 43, 0.65);
-  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.14), 0 0 16px rgba(192, 57, 43, 0.12);
-}
-.baseline-passage.shake {
-  animation: baselineShake 0.18s linear 1;
-}
-@keyframes baselineShake {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-2px); }
-  40% { transform: translateX(2px); }
-  60% { transform: translateX(-1px); }
-  80% { transform: translateX(1px); }
-  100% { transform: translateX(0); }
-}
-.wpm-meter {
-  display: flex; align-items: center; gap: 12px; margin-top: 12px;
-}
-.wpm-big {
-  font-family: var(--mono); font-size: 32px; font-weight: 600;
-  min-width: 60px; text-align: right;
-  transition: color 0.3s;
-}
-.wpm-label { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-.progress-bar-outer {
-  flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
-}
-.progress-bar-inner {
-  height: 100%; background: var(--accent); border-radius: 3px;
-  transition: width 0.3s, background 0.3s;
-}
+/* BASELINE */
+.baseline-passage{background:var(--soft);border:1px solid var(--border);border-radius:3px;padding:18px 20px;margin-bottom:16px;font-size:14px;line-height:1.8;color:var(--text);font-family:var(--mono);letter-spacing:.01em;user-select:none;white-space:pre-wrap;word-break:break-word;cursor:text;transition:box-shadow .16s,border-color .16s;}
+.baseline-passage.focused{border-color:var(--accent);box-shadow:0 0 0 2px rgba(26,25,23,.05);}
+.baseline-passage.error-flash{border-color:rgba(192,57,43,.65);box-shadow:0 0 0 3px rgba(192,57,43,.14);}
+.baseline-passage.shake{animation:baselineShake .18s linear 1;}
+@keyframes baselineShake{0%{transform:translateX(0)}20%{transform:translateX(-2px)}40%{transform:translateX(2px)}60%{transform:translateX(-1px)}80%{transform:translateX(1px)}100%{transform:translateX(0)}}
+.char.correct{color:var(--green);}
+.char.current{background:rgba(41,128,185,.12);border-bottom:2px solid var(--blue);}
+.char.pending{color:var(--muted);}
+.char.incorrect{color:var(--red);background:rgba(192,57,43,.12);}
+.baseline-capture{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;left:-9999px;top:0;}
+.wpm-meter{display:flex;align-items:center;gap:12px;margin-top:12px;}
+.wpm-big{font-family:var(--mono);font-size:32px;font-weight:600;min-width:60px;text-align:right;transition:color .3s;}
+.wpm-label{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.progress-bar-outer{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.progress-bar-inner{height:100%;background:var(--accent);border-radius:3px;transition:width .3s,background .3s;}
+.bl-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;}
+.bl-stat{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:10px 12px;}
+.bl-stat .k{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.bl-stat .v{font-family:var(--mono);font-size:16px;font-weight:500;}
 
 /* WRITING SCREEN */
-#screen-write { flex-direction: column; align-items: center; }
-.write-layout { width: 100%; max-width: 820px; }
-.write-topbar {
-  background: var(--surface); border: 1px solid var(--border);
-  border-bottom: none; border-radius: 4px 4px 0 0;
-  padding: 11px 20px; display: flex; align-items: center; justify-content: space-between;
-}
-.timer-big { font-family: var(--mono); font-size: 22px; font-weight: 600; letter-spacing: 0.04em; }
-.timer-big.warn { color: var(--orange); }
-.timer-big.crit { color: var(--red); }
-.badge {
-  font-family: var(--mono); font-size: 10px; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 3px 9px; border-radius: 2px; border: 1px solid var(--border);
-}
-.badge.brain { background: #d4edda; border-color: #9fd4a9; color: #155724; }
-.badge.search { background: #d1ecf1; border-color: #9adce7; color: #0c5460; }
-.badge.llm { background: #fef3cd; border-color: #f6c85e; color: #856404; }
-.prompt-strip {
-  background: var(--soft); border: 1px solid var(--border);
-  border-bottom: none; padding: 13px 20px; font-size: 13px; line-height: 1.6;
-}
-.prompt-strip .tag { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 3px; }
-#essay-area {
-  width: 100%; min-height: 400px; padding: 20px;
-  border: 1px solid var(--border); border-top: none; border-radius: 0 0 0 0;
-  font-family: var(--mono); font-size: 14px; line-height: 1.8;
-  resize: vertical; background: var(--surface); color: var(--text); outline: none;
-}
-.write-bottombar {
-  background: var(--surface); border: 1px solid var(--border);
-  border-top: 1px solid var(--border); border-radius: 0 0 4px 4px;
-  padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
-}
-.live-stats { display: flex; gap: 18px; flex-wrap: wrap; }
-.ls { display: flex; flex-direction: column; }
-.ls-val { font-family: var(--mono); font-size: 16px; font-weight: 500; }
-.ls-key { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.write-layout{width:100%;max-width:820px;}
+.write-topbar{background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:4px 4px 0 0;padding:11px 20px;display:flex;align-items:center;justify-content:space-between;}
+.timer-big{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:.04em;}
+.timer-big.warn{color:var(--orange);}
+.timer-big.crit{color:var(--red);}
+.prompt-strip{background:var(--soft);border:1px solid var(--border);border-bottom:none;padding:13px 20px;font-size:13px;line-height:1.6;}
+.prompt-strip .tag{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:3px;}
+#essay-area{width:100%;min-height:420px;padding:20px;border:1px solid var(--border);border-top:none;border-radius:0;font-family:var(--mono);font-size:14px;line-height:1.8;resize:vertical;background:var(--surface);color:var(--text);outline:none;}
+.write-bottombar{background:var(--surface);border:1px solid var(--border);border-top:1px solid var(--border);border-radius:0 0 4px 4px;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;}
+.live-stats{display:flex;gap:18px;flex-wrap:wrap;}
+.ls{display:flex;flex-direction:column;}
+.ls-val{font-family:var(--mono);font-size:16px;font-weight:500;}
+.ls-key{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
 
 /* RESULTS */
-.res-grid {
-  display: grid; grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px; margin-bottom: 20px;
-}
-@media (max-width: 600px) { .res-grid { grid-template-columns: 1fr 1fr; } }
-.res-cell {
-  background: var(--bg); border: 1px solid var(--border); border-radius: 3px;
-  padding: 12px 14px;
-}
-.res-lbl { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 3px; }
-.res-val { font-family: var(--mono); font-size: 17px; font-weight: 500; }
-.res-sub { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 2px; }
-.section-title {
-  font-family: var(--mono); font-size: 10px; text-transform: uppercase;
-  letter-spacing: 0.1em; color: var(--muted); margin: 18px 0 10px;
-}
-.raw-btn { font-family: var(--mono); font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0; margin-top: 10px; display: block; }
-#raw-out { display:none; margin-top:10px; font-family:var(--mono); font-size:10px; background:var(--bg); border:1px solid var(--border); border-radius:3px; padding:12px; max-height:180px; overflow-y:auto; white-space:pre-wrap; word-break:break-all; }
+.section-hd{font-family:var(--mono);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:22px 0 10px;display:flex;align-items:center;gap:10px;}
+.section-hd::after{content:'';flex:1;height:1px;background:var(--border);}
+.section-hd .tag{font-size:8px;padding:2px 7px;border-radius:2px;font-weight:600;letter-spacing:.08em;}
+.tag-primary{background:var(--accent);color:#fff;}
+.tag-secondary{background:var(--blue);color:#fff;}
+.tag-exploratory{background:var(--purple);color:#fff;}
+.tag-covariate{background:var(--soft);color:var(--muted);}
+.tag-quality{background:var(--orange);color:#fff;}
 
-/* CONSENT + UPLOAD */
-.modal-overlay {
-  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
-  z-index:1200; align-items:center; justify-content:center; padding:24px;
-}
-.modal-overlay.show { display:flex; }
-.modal-card {
-  background: var(--surface); border:1px solid var(--border); border-radius:4px;
-  width:100%; max-width:760px; max-height:88vh; overflow:hidden; display:flex; flex-direction:column;
-}
-.modal-head {
-  padding:18px 24px; border-bottom:1px solid var(--border); background:var(--surface);
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-}
-.modal-title { font-size:18px; font-weight:600; letter-spacing:-0.02em; }
-.modal-body { padding:20px 24px; overflow:auto; background:var(--bg); }
-.modal-body p, .modal-body li { font-size:13px; line-height:1.7; color:var(--text); }
-.modal-body ul { margin:10px 0 14px 18px; }
-.modal-body .subtle { color:var(--muted); }
-.consent-check {
-  display:flex; gap:10px; align-items:flex-start; margin-top:14px;
-  padding:12px 14px; border:1px solid var(--border); border-radius:3px; background:var(--surface);
-}
-.consent-check input { width:auto; margin:3px 0 0 0; }
-.modal-foot {
-  padding:16px 24px; border-top:1px solid var(--border); background:var(--surface);
-  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
-}
-.upload-inline {
-  margin: 14px 0 0; font-family: var(--mono); font-size: 11px; color: var(--muted);
-}
-.small-note {
-  font-family: var(--mono); font-size: 10px; color: var(--muted); line-height:1.5;
-}
+.feature-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+@media(max-width:640px){.feature-grid{grid-template-columns:1fr 1fr;}}
+.feature-card{border:1px solid var(--border);border-radius:3px;padding:16px 18px;}
+.feature-card.primary{background:var(--surface);border-color:var(--accent);}
+.feature-card.secondary{background:var(--surface);}
+.feature-card.exploratory{background:var(--bg);}
+.feature-card.covariate{background:var(--bg);border-style:dashed;}
+.fc-role{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;}
+.fc-role.primary{color:var(--accent);}
+.fc-role.secondary{color:var(--blue);}
+.fc-role.exploratory{color:var(--purple);}
+.fc-role.covariate{color:var(--muted);}
+.fc-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.fc-val{font-family:var(--mono);font-size:26px;font-weight:600;line-height:1;margin-bottom:4px;}
+.fc-sub{font-family:var(--mono);font-size:10px;color:var(--muted);}
+
+.rw-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;margin-bottom:4px;}
+.rw-table th{text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:500;font-size:9px;text-transform:uppercase;letter-spacing:.08em;}
+.rw-table td{padding:7px 10px;border-bottom:1px solid var(--soft);}
+.rw-table tr:last-child td{border-bottom:none;}
+.rw-table .val{font-weight:500;}
+
+.flag-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;}
+@media(max-width:640px){.flag-grid{grid-template-columns:repeat(3,1fr);}}
+.flag-cell{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:10px 12px;}
+.flag-cell .k{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.flag-cell .v{font-family:var(--mono);font-size:18px;font-weight:500;}
+.flag-cell .v.alert{color:var(--red);}
+
+/* POST-TASK */
+.pt-question{margin-bottom:28px;}
+.pt-question p{font-size:14px;font-weight:500;margin-bottom:10px;line-height:1.5;}
+.scale-row{display:flex;gap:6px;}
+.scale-btn{flex:1;padding:10px 4px;border:1px solid var(--border);border-radius:3px;background:var(--bg);font-family:var(--mono);font-size:12px;cursor:pointer;text-align:center;transition:all .15s;}
+.scale-btn:hover{border-color:var(--accent);background:var(--soft);}
+.scale-btn.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
+.scale-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px;}
+.option-row{display:flex;flex-direction:column;gap:6px;}
+.option-btn{padding:9px 14px;border:1px solid var(--border);border-radius:3px;background:var(--bg);font-family:var(--mono);font-size:12px;cursor:pointer;text-align:left;transition:all .15s;}
+.option-btn:hover{border-color:var(--accent);background:var(--soft);}
+.option-btn.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
+.pt-textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:3px;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--text);resize:vertical;min-height:60px;margin-top:8px;}
+.pt-textarea:focus{outline:none;border-color:var(--accent);}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1200;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.show{display:flex;}
+.modal-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;width:100%;max-width:760px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;}
+.modal-head{padding:18px 24px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.modal-title{font-size:18px;font-weight:600;letter-spacing:-.02em;}
+.modal-body{padding:20px 24px;overflow:auto;background:var(--bg);}
+.modal-body p,.modal-body li{font-size:13px;line-height:1.7;color:var(--text);}
+.modal-body ul{margin:10px 0 14px 18px;}
+.modal-body .subtle{color:var(--muted);}
+.consent-check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border:1px solid var(--border);border-radius:3px;background:var(--surface);}
+.consent-check input{width:auto;margin:3px 0 0 0;}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);background:var(--surface);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+.small-note{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.5;}
+
+/* FULLSCREEN WARNING */
+#fs-warning{display:none;position:fixed;inset:0;background:rgba(192,57,43,.96);z-index:2000;align-items:center;justify-content:center;flex-direction:column;gap:20px;color:#fff;text-align:center;padding:40px;}
+#fs-warning.show{display:flex;}
+#fs-warning h2{font-size:22px;font-weight:600;}
+#fs-warning p{font-size:13px;opacity:.85;max-width:400px;line-height:1.6;}
+
+.raw-btn{font-family:var(--mono);font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-top:10px;display:block;}
+#raw-out{display:none;margin-top:10px;font-family:var(--mono);font-size:10px;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:12px;max-height:180px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;}
+
+
+/* RESULTS DASHBOARD */
+.results-kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px;}
+@media(max-width:900px){.results-kpi-strip{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:560px){.results-kpi-strip{grid-template-columns:repeat(2,1fr);}}
+.kpi-tile,.survey-mini{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:12px 14px;}
+.kpi-tile .k,.survey-mini .k{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.kpi-tile .v,.survey-mini .v{font-family:var(--mono);font-size:24px;font-weight:600;line-height:1.05;margin-bottom:4px;}
+.kpi-tile .s,.survey-mini .s{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.4;}
+.graph-stack{display:flex;flex-direction:column;gap:16px;margin-bottom:18px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:18px 18px 14px;color:var(--text);}
+.chart-title{font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text);margin-bottom:14px;}
+.chart-subtitle{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:-6px;margin-bottom:12px;}
+.chart-legend{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:7px;}
+.legend-swatch{width:11px;height:11px;border-radius:2px;display:inline-block;}
+.chart-wrap{width:100%;overflow-x:auto;}
+.chart-svg{width:100%;height:auto;display:block;}
+.chart-note{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:10px;line-height:1.5;}
+.survey-mini-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+@media(max-width:900px){.survey-mini-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:560px){.survey-mini-grid{grid-template-columns:repeat(2,1fr);}}
+.survey-mini .k{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.survey-mini .v{font-family:var(--mono);font-size:18px;font-weight:600;line-height:1.2;word-break:break-word;}
+.survey-mini .s{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4;}
 
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Cog<span>Type</span> — v2</div>
+  <div class="logo">Cog<span>Type</span> — v3</div>
   <div class="header-right">
     <div class="phase-indicator">
       <div class="phase-step active" id="ph-0">Setup</div>
       <div class="phase-step" id="ph-1">Baseline</div>
       <div class="phase-step" id="ph-2">Writing</div>
-      <div class="phase-step" id="ph-3">Results</div>
+      <div class="phase-step" id="ph-3">Survey</div>
+      <div class="phase-step" id="ph-4">Results</div>
     </div>
     <div class="status-chip">
       <div class="dot" id="status-dot"></div>
@@ -302,20 +238,27 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
   </div>
 </header>
 
+<!-- ═══ FULLSCREEN WARNING ═══ -->
+<div id="fs-warning">
+  <h2>Fullscreen Exited</h2>
+  <p>This has been logged. The Brain-Only condition requires you to stay in fullscreen. Please return to fullscreen to continue.</p>
+  <button class="btn danger" onclick="reenterFullscreen()">Return to Fullscreen</button>
+</div>
 
+<!-- ═══ CONSENT MODAL ═══ -->
 <div id="consent-modal" class="modal-overlay" aria-hidden="true">
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="consent-title">
     <div class="modal-head">
       <div>
         <div class="modal-title" id="consent-title">Research Consent</div>
-        <div class="small-note">Shown once on first visit on this device.</div>
+        <div class="small-note">Required before participating.</div>
       </div>
-      <div class="badge" style="background:var(--soft); color:var(--text);">required</div>
+      <div class="badge" style="background:var(--soft);color:var(--text);">required</div>
     </div>
     <div class="modal-body" id="consent-body"></div>
     <div class="modal-foot">
       <div class="small-note" id="consent-error">You must review and agree before continuing.</div>
-      <div style="display:flex; gap:9px; flex-wrap:wrap;">
+      <div style="display:flex;gap:9px;flex-wrap:wrap;">
         <button class="btn ghost" type="button" onclick="declineConsent()">Decline</button>
         <button class="btn" type="button" id="consent-agree-btn" onclick="acceptConsent()" disabled>I Agree</button>
       </div>
@@ -323,6 +266,24 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
   </div>
 </div>
 
+<!-- ═══ SKIP MODAL ═══ -->
+<div id="skip-modal" class="modal-overlay">
+  <div class="modal-card" style="max-width:360px;">
+    <div class="modal-head">
+      <div class="modal-title">Researcher Override</div>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:14px;font-size:13px;color:var(--muted);">Enter the passcode to skip the baseline typing test. For researcher use only.</p>
+      <label>Passcode</label>
+      <input type="password" id="skip-passcode-input" onkeydown="if(event.key==='Enter')attemptSkip()">
+      <div id="skip-error" style="font-family:var(--mono);font-size:11px;color:var(--red);margin-top:-10px;"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeSkipModal()">Cancel</button>
+      <button class="btn" onclick="attemptSkip()">Confirm</button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════
      PHASE 0 — SETUP
@@ -330,7 +291,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 <div class="screen active" id="screen-setup">
   <div class="card">
     <h1>Session Setup</h1>
-    <p class="sub">Researcher fills this in before handing the device to the participant. No data is transmitted — everything stays local.</p>
+    <p class="sub">Researcher fills this in. Condition and prompt should follow your pre-assigned randomization table — do not choose based on preference.</p>
 
     <label for="f-pid">Participant ID</label>
     <input type="text" id="f-pid" placeholder="e.g. P001" maxlength="20">
@@ -339,6 +300,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
     <select id="f-sess">
       <option value="1">Session 1</option>
       <option value="2">Session 2</option>
+      <option value="3">Session 3</option>
     </select>
 
     <label for="f-cond">Writing Condition</label>
@@ -350,25 +312,25 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 
     <label for="f-prompt">Essay Prompt</label>
     <select id="f-prompt">
-      <option value="0">A — Social Media & Democracy</option>
-      <option value="1">B — AI & Employment</option>
-      <option value="2">C — Climate Policy & Individual Action</option>
-      <option value="3">D — Free Speech & Online Platforms</option>
+      <option value="0">A — Social Media &amp; Democracy</option>
+      <option value="1">B — AI &amp; Employment</option>
+      <option value="2">C — Climate Policy &amp; Individual Action</option>
+      <option value="3">D — Free Speech &amp; Online Platforms</option>
     </select>
 
-    <label for="f-dur">Session Duration</label>
+    <label for="f-dur">Duration (minutes)</label>
     <select id="f-dur">
-      <option value="20">20 minutes</option>
-      <option value="15">15 minutes</option>
-      <option value="10">10 minutes (practice)</option>
+      <option value="15">15</option>
+      <option value="20" selected>20</option>
+      <option value="25">25</option>
+      <option value="30">30</option>
     </select>
 
     <label for="f-kb">Keyboard Type</label>
     <select id="f-kb">
-      <option value="laptop_builtin">Laptop built-in</option>
-      <option value="external_mechanical">External mechanical</option>
-      <option value="external_membrane">External membrane</option>
-      <option value="tablet_glass">Tablet / glass</option>
+      <option value="laptop_built_in">Laptop Built-In</option>
+      <option value="external_mechanical">External — Mechanical</option>
+      <option value="external_membrane">External — Membrane</option>
       <option value="other">Other</option>
     </select>
 
@@ -376,28 +338,25 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
     <select id="f-lang">
       <option value="en">English</option>
       <option value="zh">Chinese (Mandarin)</option>
-      <option value="es">Spanish</option>
-      <option value="fr">French</option>
+      <option value="ja">Japanese</option>
       <option value="other">Other</option>
     </select>
 
-    <div class="info-box">
-      <strong>Note for researcher:</strong> Keyboard type and language are covariates — they will be included as control variables in the ANOVA. Record them accurately even if they seem minor. This tool keeps data local in the browser and now also stores an in-progress recovery snapshot on this device until the session is exported or reset.
-    </div>
+    <div id="setup-recovery-area"></div>
 
     <div class="btn-row">
-      <button class="btn" onclick="setupDone()">Next: Baseline Test →</button>
+      <button class="btn" onclick="setupDone()">Continue to Baseline →</button>
     </div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════
-     PHASE 1 — BASELINE TYPING TEST
+     PHASE 1 — BASELINE
 ═══════════════════════════════════ -->
 <div class="screen" id="screen-baseline">
-  <div class="card card-wide">
-    <h1>Typing Speed Baseline</h1>
-    <p class="sub">Type the passage below as accurately and naturally as possible. This is not timed — just type at your normal speed. Your result is used as a personal baseline and to check eligibility.</p>
+  <div class="card" style="max-width:640px;">
+    <h1>Baseline Typing</h1>
+    <p class="sub">Type the passage below exactly as shown. This calibrates your natural typing speed — used as a covariate in analysis. Do not paste or use keyboard shortcuts.</p>
 
     <div class="meta-pill">
       <span>Participant: <strong id="b-pid">—</strong></span>
@@ -405,105 +364,71 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
       <span>Session: <strong id="b-sess">—</strong></span>
     </div>
 
-    <label for="baseline-capture">Type the passage above:</label>
-    <div class="baseline-passage" id="baseline-passage" tabindex="0" aria-label="Typing passage area">
-      The relationship between technology and human cognition has become one of the most debated topics in modern psychology. As digital tools grow more capable, researchers are asking whether reliance on these tools changes the way people think, plan, and remember. Some argue that offloading cognitive tasks to machines frees up mental resources for higher-order thinking. Others contend that the practice erodes the very skills it replaces.
-    </div>
-    <input id="baseline-capture" class="baseline-capture" type="text" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off" aria-hidden="true">
-
-    <div class="baseline-mini-stats">
-      <div class="baseline-mini-card"><div class="k">Net WPM</div><div class="v" id="baseline-net-wpm">0</div></div>
-      <div class="baseline-mini-card"><div class="k">Raw WPM</div><div class="v" id="baseline-raw-wpm">0</div></div>
-      <div class="baseline-mini-card"><div class="k">Accuracy</div><div class="v" id="baseline-acc">0%</div></div>
-      <div class="baseline-mini-card"><div class="k">Progress</div><div class="v" id="baseline-progress">0%</div></div>
-    </div>
+    <div class="baseline-passage" id="baseline-passage"></div>
+    <textarea class="baseline-capture" id="baseline-capture" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 
     <div class="wpm-meter">
-      <div>
-        <div class="wpm-big" id="wpm-live">—</div>
-        <div class="wpm-label">WPM</div>
-      </div>
-      <div style="flex:1;">
-        <div class="progress-bar-outer">
-          <div class="progress-bar-inner" id="wpm-bar" style="width:0%"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;">
-          <span>0</span><span style="color:var(--red)">25 (min)</span><span>60</span><span>100+</span>
-        </div>
-      </div>
+      <span class="wpm-big" id="wpm-live">—</span>
+      <span class="wpm-label">net WPM</span>
+      <div class="progress-bar-outer"><div class="progress-bar-inner" id="wpm-bar" style="width:0%"></div></div>
+    </div>
+
+    <div class="bl-stats">
+      <div class="bl-stat"><div class="k">Net WPM</div><div class="v" id="bl-wpm">0</div></div>
+      <div class="bl-stat"><div class="k">Accuracy</div><div class="v" id="bl-acc">0%</div></div>
+      <div class="bl-stat"><div class="k">Progress</div><div class="v" id="bl-prog">0%</div></div>
+      <div class="bl-stat"><div class="k">Raw WPM</div><div class="v" id="bl-raw">0</div></div>
     </div>
 
     <div id="baseline-feedback" style="margin-top:14px;"></div>
 
     <div class="btn-row">
-      <button class="btn" id="baseline-next-btn" disabled onclick="baselineDone()">Continue to Writing →</button>
-      <button class="btn ghost" onclick="resetBaseline()">Retake</button>
-      <button class="btn ghost" onclick="goTo('screen-setup')">← Back</button>
-    </div>
-    <p style="margin-top:18px;font-family:var(--mono);font-size:11px;color:var(--border);">
-      Researcher: <button onclick="openSkipModal()" style="background:none;border:none;font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;padding:0;">skip baseline</button>
-    </p>
-  </div>
-</div>
-
-<!-- PASSCODE MODAL -->
-<div id="skip-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:999;align-items:center;justify-content:center;">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:32px 36px;width:100%;max-width:360px;font-family:var(--sans);">
-    <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Researcher Passcode</div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;">Enter the passcode to skip the baseline test. The session will be flagged as baseline-skipped in the export. This is only a local convenience gate on a static page, not a security boundary.</p>
-    <label>Passcode</label>
-    <input type="password" id="skip-passcode-input" placeholder="••••••" maxlength="20"
-      style="margin-bottom:8px;"
-      onkeydown="if(event.key==='Enter') attemptSkip()">
-    <div id="skip-error" style="font-family:var(--mono);font-size:11px;color:var(--red);min-height:16px;margin-bottom:14px;"></div>
-    <div style="display:flex;gap:9px;">
-      <button class="btn" onclick="attemptSkip()">Confirm Skip</button>
-      <button class="btn ghost" onclick="closeSkipModal()">Cancel</button>
+      <button class="btn" id="baseline-next-btn" disabled onclick="baselineDone()">Continue to Instructions →</button>
+      <button class="btn ghost" onclick="openSkipModal()">Researcher Skip</button>
     </div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════
-     PHASE 1b — REJECTED
+     BASELINE REJECTED
 ═══════════════════════════════════ -->
 <div class="screen" id="screen-rejected">
   <div class="card">
-    <h1>Eligibility Check Failed</h1>
-    <p class="sub">This participant does not meet the minimum typing speed requirement for this study.</p>
+    <h1>Baseline Not Valid</h1>
+    <p class="sub">This participant's baseline did not meet the minimum requirements. Do not proceed with this session.</p>
     <div class="info-box danger">
-      <strong>Result:</strong> Typing speed was below 25 WPM, the minimum threshold for valid keystroke dynamics analysis. Participants typing slower than 25 WPM produce insufficient keystroke event density for reliable IKI and burst feature extraction.
+      <strong>Participant <span id="rej-pid">—</span></strong> recorded <strong><span id="rej-wpm">—</span> net WPM</strong>, which is below the 25 WPM minimum required for valid IKI data. Exclude this participant from the study or allow a re-attempt.
     </div>
-    <div class="info-box">
-      <strong>Measured WPM:</strong> <span id="rej-wpm">—</span><br>
-      <strong>Required minimum:</strong> 25 WPM<br>
-      <strong>Participant ID:</strong> <span id="rej-pid">—</span>
-    </div>
-    <p style="font-size:13px;color:var(--muted);line-height:1.6;">Log this participant as excluded in your records. Do not include this session in analysis. The participant may retake the baseline test once if they believe the result was affected by distraction or error.</p>
     <div class="btn-row">
-      <button class="btn ghost" onclick="goTo('screen-baseline')">Allow Retake</button>
-      <button class="btn ghost" onclick="goTo('screen-setup')">New Participant</button>
+      <button class="btn ghost" onclick="goTo('screen-baseline');resetBaseline();">Retry Baseline</button>
+      <button class="btn ghost" onclick="newSession()">New Session</button>
     </div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════
-     PHASE 1c — INSTRUCTIONS
+     INSTRUCTIONS
 ═══════════════════════════════════ -->
 <div class="screen" id="screen-instructions">
   <div class="card">
-    <h1>Instructions</h1>
-    <p class="sub">Read carefully before the writing session begins.</p>
+    <h1>Condition Instructions</h1>
+    <p class="sub">Read these instructions carefully before starting. The timer will begin when you click Start Writing.</p>
+
     <div class="meta-pill">
       <span>Participant: <strong id="i-pid">—</strong></span>
       <span>Condition: <strong id="i-cond">—</strong></span>
-      <span>Baseline: <strong id="i-wpm">—</strong> WPM</span>
+      <span>Baseline WPM: <strong id="i-wpm">—</strong></span>
       <span>Duration: <strong id="i-dur">—</strong> min</span>
     </div>
+
     <div id="cond-instructions"></div>
-    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-top:16px;">The timer starts when you click <strong>Begin Writing</strong>. Type your essay in the text area. Keystroke timing will be recorded — no text content is stored.</p>
+
+    <div class="info-box">
+      <strong>Essay Prompt:</strong> You will see the prompt when the session starts. Write a structured argument — take a clear position and support it with reasoning. The <em>quality</em> of your essay is not evaluated. Your natural writing process is what matters.
+    </div>
+
     <div class="btn-row">
-      <button class="btn" onclick="beginWriting()">Begin Writing →</button>
-      <button class="btn ghost" onclick="goTo('screen-setup')">← Back to Setup</button>
+      <button class="btn success" onclick="beginWriting()">Start Writing →</button>
     </div>
   </div>
 </div>
@@ -515,72 +440,94 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
   <div class="write-layout">
     <div class="write-topbar">
       <div style="display:flex;align-items:center;gap:14px;">
-        <div class="timer-big" id="timer-disp">20:00</div>
-        <div class="badge" id="cond-badge">—</div>
-        <span style="font-family:var(--mono);font-size:11px;color:var(--muted);" id="write-pid-lbl"></span>
+        <span class="timer-big" id="timer-disp">00:00</span>
+        <span class="badge" id="cond-badge">—</span>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn ghost" style="padding:6px 13px;font-size:12px;" onclick="endWriting()">End Early</button>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--muted);" id="write-pid-lbl"></span>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--red);">● recording</span>
       </div>
     </div>
     <div class="prompt-strip">
-      <span class="tag">Prompt</span>
+      <span class="tag">Essay Prompt</span>
       <span id="write-prompt-text"></span>
     </div>
-    <textarea id="essay-area" placeholder="Begin writing your essay here…" spellcheck="true"></textarea>
+    <textarea id="essay-area" placeholder="Begin typing your essay here..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="true"></textarea>
     <div class="write-bottombar">
       <div class="live-stats">
         <div class="ls"><span class="ls-val" id="lv-keys">0</span><span class="ls-key">keys</span></div>
-        <div class="ls"><span class="ls-val" id="lv-wpm">0</span><span class="ls-key">wpm</span></div>
         <div class="ls"><span class="ls-val" id="lv-words">0</span><span class="ls-key">words</span></div>
+        <div class="ls"><span class="ls-val" id="lv-wpm">0</span><span class="ls-key">WPM</span></div>
         <div class="ls"><span class="ls-val" id="lv-pauses">0</span><span class="ls-key">pauses&gt;1s</span></div>
-        <div class="ls"><span class="ls-val" id="lv-bs">0</span><span class="ls-key">backspace</span></div>
+        <div class="ls"><span class="ls-val" id="lv-bs">0</span><span class="ls-key">revisions</span></div>
         <div class="ls"><span class="ls-val" id="lv-bursts">0</span><span class="ls-key">bursts</span></div>
       </div>
-      <span style="font-family:var(--mono);font-size:11px;color:var(--red);">● recording</span>
+      <button class="btn danger" onclick="endWriting(true)">End Early</button>
     </div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════
-     PHASE 3 — RESULTS
+     PHASE 3 — POST-TASK SURVEY
+═══════════════════════════════════ -->
+<div class="screen" id="screen-posttask">
+  <div class="card" style="max-width:600px;">
+    <h1>Post-Task Survey</h1>
+    <p class="sub">Answer honestly — this data is used to check condition compliance and interpret outliers. It does not affect your participation.</p>
+
+    <div id="pt-questions"></div>
+
+    <div class="btn-row">
+      <button class="btn" id="pt-submit-btn" onclick="submitPostTask()">View Results →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PHASE 4 — RESULTS
 ═══════════════════════════════════ -->
 <div class="screen" id="screen-results">
   <div class="card card-wide">
     <h1>Session Complete</h1>
-    <p class="sub">All computed features are shown below. Export both files for your records.</p>
+    <p class="sub">The typing logic is unchanged. This results page now turns the output into a visual dashboard so the session is easier to read at a glance.</p>
 
     <div class="meta-pill" id="res-meta-pill"></div>
+    <div class="results-kpi-strip" id="results-kpis"></div>
 
-    <div class="section-title">Core Features (Primary Analysis)</div>
-    <div class="res-grid" id="rg-core"></div>
+    <div class="graph-stack" id="results-graphs"></div>
 
-    <div class="section-title">IKI Detail</div>
-    <div class="res-grid" id="rg-iki"></div>
+    <div class="section-hd">Post-Task Survey Responses</div>
+    <div class="survey-mini-grid" id="rg-posttask"></div>
 
-    <div class="section-title">Burst Analysis</div>
-    <div class="res-grid" id="rg-burst"></div>
+    <div class="section-hd">Rolling Quartile Data Table</div>
+    <table class="rw-table" id="rw-table">
+      <thead>
+        <tr>
+          <th>Quartile</th>
+          <th>Keys</th>
+          <th>Mean IKI (ms)</th>
+          <th>IKI CoV</th>
+          <th>Bursts</th>
+          <th>Revisions</th>
+        </tr>
+      </thead>
+      <tbody id="rw-body"></tbody>
+    </table>
 
-    <div class="section-title">Revision Behaviour</div>
-    <div class="res-grid" id="rg-revision"></div>
-
-    <div class="section-title">Rolling Windows (70 Keystrokes)</div>
-    <div class="res-grid" id="rg-thirds"></div>
-
-    <div class="section-title">Hold Time (Alpha Keys)</div>
-    <div class="res-grid" id="rg-hold"></div>
-
-    <div class="section-title">Letter-Transition Latency</div>
-    <div class="res-grid" id="rg-digraph"></div>
-
-    <div class="section-title">Session Metadata</div>
-    <div class="res-grid" id="rg-meta"></div>
+    <div class="section-hd">Data Quality Flags <span class="tag tag-quality">QC</span></div>
+    <div class="info-box warn" style="font-size:12px;margin-bottom:12px;">
+      <strong>Non-zero flags do not automatically invalidate the session</strong> — use them to annotate the dataset. Tab switches are expected in Search and LLM conditions. Flag sessions with paste attempts or undo events in Brain-Only as suspect.
+    </div>
+    <div class="flag-grid" id="rg-flags"></div>
 
     <hr>
-    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;">CSV: one row per keydown event. JSON: full event log + all computed features + session metadata. Filenames include participant ID, session, and condition.</p>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;">
+      <strong>CSV:</strong> One analysis-ready row per participant — load directly into R or Excel. Includes all features, covariates, post-task responses, and QC flags.<br>
+      <strong>JSON:</strong> Full event log + all computed features + session metadata. Archive this for every participant.
+    </p>
     <div class="btn-row">
-      <button class="btn" onclick="exportCSV()">Export CSV</button>
-      <button class="btn ghost" onclick="exportJSON()">Export JSON</button>
+      <button class="btn" onclick="exportCSV()">Export CSV (Analysis Row)</button>
+      <button class="btn ghost" onclick="exportJSON()">Export JSON (Full Log)</button>
       <button class="btn ghost" onclick="newSession()">New Session</button>
     </div>
     <button class="raw-btn" onclick="toggleRaw()">show raw event log (first 100 events)</button>
@@ -594,84 +541,52 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 // ════════════════════════════════════════════
 const MIN_WPM = 25;
 const BASELINE_MIN_COMPLETION = 0.98;
-const BASELINE_MIN_ACCURACY = 0.9;
+const BASELINE_MIN_ACCURACY = 0.90;
 const BASELINE_MIN_ELAPSED_MS = 10000;
-const BASELINE_REPEAT_STREAK_FLAG = 7;
-const PAUSE_THRESHOLD_MS = 1000;       // pause > this counts as a thinking pause
-const BURST_GAP_MS = 2000;             // IKI > this breaks a burst
-const PRE_SENT_MIN_MS = 300;           // minimum for a pre-sentence pause to count
-const IKI_OUTLIER_MAX = 30000;         // cap outlier IKIs (e.g. participant walked away)
+const PAUSE_THRESHOLD_MS = 1000;
+const BURST_GAP_MS = 2000;
+const PRE_SENT_MIN_MS = 300;
+const IKI_OUTLIER_MAX = 30000;
+const N_ROLLING_WINDOWS = 4;
+const SKIP_PASSCODE = 'cogtype2025';
+const CONSENT_VERSION = '2026-v3';
+const CONSENT_KEY = `cogtype_consent_${CONSENT_VERSION}`;
 
 const PROMPTS = [
-  "Social media platforms have fundamentally changed how democratic societies form political opinions. Argue whether this change has been net positive or net negative for democracy, using specific reasoning to support your position.",
-  "Artificial intelligence will eliminate more jobs than it creates over the next two decades. Do you agree or disagree? Use logical reasoning to defend your position.",
-  "Individual lifestyle changes such as diet, travel habits, and consumption patterns are insufficient to address climate change without systemic policy intervention. Defend or challenge this claim.",
-  "Private technology companies should have the right to moderate speech on their platforms without government oversight. Argue for or against this position and address the strongest counterargument."
+  { id:'A', text:'Social media platforms have fundamentally changed how democratic societies form political opinions. Argue whether this change has been net positive or net negative for democracy, using specific reasoning to support your position.' },
+  { id:'B', text:'Artificial intelligence will eliminate more jobs than it creates over the next two decades. Do you agree or disagree? Use logical reasoning to defend your position.' },
+  { id:'C', text:'Individual lifestyle changes such as diet, travel habits, and consumption patterns are insufficient to address climate change without systemic policy intervention. Defend or challenge this claim.' },
+  { id:'D', text:'Private technology companies should have the right to moderate speech on their platforms without government oversight. Argue for or against this position and address the strongest counterargument.' }
 ];
 
-const COND_LABELS = { brain: 'Brain-Only', search: 'Search Engine', llm: 'LLM-Assisted' };
+const COND_LABELS = { brain:'Brain-Only', search:'Search Engine', llm:'LLM-Assisted' };
+
 const BASELINE_TEXT = `The relationship between technology and human cognition has become one of the most debated topics in modern psychology. As digital tools grow more capable, researchers are asking whether reliance on these tools changes the way people think, plan, and remember. Some argue that offloading cognitive tasks to machines frees up mental resources for higher-order thinking. Others contend that the practice erodes the very skills it replaces.`;
-
-const CONSENT_VERSION = '2026-03-30-v2';
-const CONSENT_STORAGE_KEY = `cogtype_consent_${CONSENT_VERSION}`;
-
-const CONSENT_CONFIG = {
-  studyTitle: 'Cognitive Effects of Writing Assistance Tools',
-  researcherName: 'Ethan Lo',
-  researcherEmail: '128ethanl@gmail.com',
-  irbName: 'Prototype only',
-  irbContact: 'none',
-  purpose: 'This study examines typing behavior and writing-process measures across different writing conditions.',
-  duration: 'About 20 minutes, plus setup and baseline typing.',
-  procedures: [
-    'You will complete a baseline typing task and one timed writing task.',
-    'The app records keystroke timing, revision behavior, pauses, and session metadata.',
-    'At the end of the session, you will be asked to download the session files and provide them to the researcher according to the study instructions.'
-  ],
-  risks: [
-    'Possible mild fatigue, frustration, or discomfort from timed writing.',
-    'Privacy risk if research data were mishandled, though the app is designed to minimize stored identifiers.'
-  ],
-  benefits: [
-    'You may not receive a direct personal benefit.',
-    'Your participation may help researchers better understand writing processes and tool-assisted cognition.'
-  ],
-  compensation: '5 cents and a piece of gum',
-  confidentiality: 'The study stores participant ID, timing data, and session metadata in the browser until you download the session files. Avoid entering names or other directly identifying information unless your approved protocol requires it.',
-  voluntary: 'Participation is voluntary. You may stop at any time without penalty and may decline to answer any question.',
-  withdrawal: 'If you withdraw before submitting, tell the researcher immediately so they can follow your approved protocol for deleting or retaining partial data.',
-  questions: 'Questions about the study should go to the researcher. Questions about your rights as a participant should go to the IRB / ethics office.',
-  adultStatement: 'By agreeing, you confirm that you are authorized to consent under the approved protocol.',
-  termsOfService: [
-    'This app is for supervised research use only and should be used only by the participant assigned to the session.',
-    'Do not attempt to bypass, automate, or manipulate the typing tasks, including with key spam, paste, macros, or external scripts.',
-    'The participant is responsible for using the device normally and for reporting accidental interruptions to the researcher.',
-    'Session files should be exported only to the researcher or approved study workflow.'
-  ]
-};
-
 
 // ════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════
 let meta = {};
-let baselineWPM = 0;
-let events = [];            // full keystroke event log
-let keyDownMap = new Map(); // physical key id -> queue of active presses
+let events = [];
+let keyDownMap = new Map();
 let sessionStart = null;
+let sessionEndTime = null;
 let lastKeyDownTime = null;
 let timerInt = null;
 let liveInt = null;
+let autoSaveInt = null;
 let activeBurstLen = 0;
 let burstLengths = [];
 let isWriting = false;
-let writingListenersBound = false;
 let hasEnded = false;
 let pressSeq = 0;
-let autoSaveInt = null;
+let writingListenersBound = false;
+let postTaskAnswers = {};
+let baselineWPM = 0;
+let baselineMetrics = null;
 
 // live counters
-let cntKeys = 0, cntBackspace = 0, cntPause = 0, cntBursts = 0;
+let cntKeys=0, cntBackspace=0, cntPause=0, cntBursts=0;
 
 // ════════════════════════════════════════════
 //  NAVIGATION
@@ -679,16 +594,10 @@ let cntKeys = 0, cntBackspace = 0, cntPause = 0, cntBursts = 0;
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if (id !== 'screen-baseline') {
-    document.getElementById('baseline-passage')?.classList.remove('focused');
-  }
-  if (id === 'screen-baseline') {
-    setTimeout(focusBaselineCapture, 0);
-  }
-  // phase indicator
-  const map = { 'screen-setup':0, 'screen-baseline':1, 'screen-instructions':1, 'screen-rejected':1, 'screen-write':2, 'screen-results':3 };
+  if (id === 'screen-baseline') setTimeout(focusBaselineCapture, 0);
+  const map = { 'screen-setup':0, 'screen-baseline':1, 'screen-rejected':1, 'screen-instructions':1, 'screen-write':2, 'screen-posttask':3, 'screen-results':4 };
   const phase = map[id] ?? 0;
-  for (let i = 0; i < 4; i++) {
+  for (let i=0;i<5;i++) {
     const el = document.getElementById(`ph-${i}`);
     el.classList.remove('active','done');
     if (i < phase) el.classList.add('done');
@@ -703,24 +612,21 @@ function setupDone() {
   const pid = document.getElementById('f-pid').value.trim();
   if (!pid) { document.getElementById('f-pid').classList.add('err'); document.getElementById('f-pid').focus(); return; }
   document.getElementById('f-pid').classList.remove('err');
-
   attachConsentToMeta();
   meta = {
     participantId: pid,
     session: document.getElementById('f-sess').value,
     condition: document.getElementById('f-cond').value,
     promptIndex: parseInt(document.getElementById('f-prompt').value),
+    promptId: PROMPTS[parseInt(document.getElementById('f-prompt').value)].id,
     durationMinutes: parseInt(document.getElementById('f-dur').value),
     keyboardType: document.getElementById('f-kb').value,
     primaryLanguage: document.getElementById('f-lang').value,
     collectedAt: new Date().toISOString()
   };
-
-  // fill baseline screen meta
   document.getElementById('b-pid').textContent = meta.participantId;
   document.getElementById('b-cond').textContent = COND_LABELS[meta.condition];
   document.getElementById('b-sess').textContent = `Session ${meta.session}`;
-
   resetBaseline();
   goTo('screen-baseline');
 }
@@ -730,7 +636,6 @@ function setupDone() {
 // ════════════════════════════════════════════
 let baselineStart = null;
 let baselineActive = false;
-let baselineMetrics = null;
 
 function resetBaseline() {
   const capture = document.getElementById('baseline-capture');
@@ -740,136 +645,118 @@ function resetBaseline() {
   document.getElementById('wpm-bar').style.background = 'var(--accent)';
   document.getElementById('baseline-feedback').innerHTML = '';
   document.getElementById('baseline-next-btn').disabled = true;
-  document.getElementById('baseline-net-wpm').textContent = '0';
-  document.getElementById('baseline-raw-wpm').textContent = '0';
-  document.getElementById('baseline-acc').textContent = '0%';
-  document.getElementById('baseline-progress').textContent = '0%';
+  document.getElementById('bl-wpm').textContent = '0';
+  document.getElementById('bl-acc').textContent = '0%';
+  document.getElementById('bl-prog').textContent = '0%';
+  document.getElementById('bl-raw').textContent = '0';
   baselineStart = null; baselineActive = false; baselineWPM = 0;
   baselineMetrics = makeEmptyBaselineMetrics();
   renderBaselinePassage('', baselineMetrics);
   focusBaselineCapture();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const capture = document.getElementById('baseline-capture');
-  const passage = document.getElementById('baseline-passage');
-  if (capture && passage) {
-    capture.addEventListener('keydown', handleBaselineKeydown);
-    capture.addEventListener('paste', handleBaselinePaste);
-    capture.addEventListener('drop', handleBaselinePaste);
-    capture.addEventListener('blur', () => {
-      if (document.getElementById('screen-baseline').classList.contains('active') && !isSkipModalOpen()) {
-        setTimeout(focusBaselineCapture, 0);
-      }
-    });
-    passage.addEventListener('click', focusBaselineCapture);
-    passage.addEventListener('mousedown', e => {
-      e.preventDefault();
-      focusBaselineCapture();
-    });
+function makeEmptyBaselineMetrics() {
+  return {
+    typed:'', correctChars:0, errorChars:0, attemptedChars:0, progress:0, accuracy:0,
+    netWPM:0, rawWPM:0, elapsedMs:0, pasteAttempted:false, repeatKeyEvents:0,
+    suspiciousRepeatStreak:false, lastIncorrect:false, isEligible:false, hasSuspicion:false
+  };
+}
+
+function renderBaselinePassage(typed, metrics) {
+  const el = document.getElementById('baseline-passage');
+  if (!el) return;
+  const chars = BASELINE_TEXT.split('');
+  const html = chars.map((ch, i) => {
+    let cls = 'pending';
+    if (i < typed.length) cls = (typed[i] === ch) ? 'correct' : 'incorrect';
+    else if (i === typed.length) cls = 'current';
+    const safe = ch === ' ' ? '&nbsp;' : ch.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `<span class="char ${cls}">${safe}</span>`;
+  }).join('');
+  el.innerHTML = html;
+}
+
+function evaluateBaselineAttempt(typed, elapsedMs) {
+  let correct = 0;
+  for (let i=0;i<typed.length;i++) {
+    if (i < BASELINE_TEXT.length && typed[i] === BASELINE_TEXT[i]) correct++;
   }
-  bindGlobalListeners();
-  restoreDraftIfAvailable();
-  renderConsentModal();
-  enforceConsentGate();
-  renderBaselinePassage('', makeEmptyBaselineMetrics());
-});
-
-function handleBaselineInput() {
-  if (!baselineStart) return;
-  const capture = document.getElementById('baseline-capture');
-  if (!capture) return;
-  capture.value = '';
-
-  const elapsedMs = Date.now() - baselineStart;
-  const metrics = evaluateBaselineAttempt(baselineMetrics.typed, elapsedMs);
-  baselineMetrics = metrics;
-  baselineWPM = metrics.netWPM;
-
-  renderBaselinePassage(metrics.typed, metrics);
-  renderBaselineStats(metrics);
-
-  const wpmEl = document.getElementById('wpm-live');
-  const barEl = document.getElementById('wpm-bar');
-  wpmEl.textContent = metrics.netWPM;
-
-  const pct = Math.min((metrics.netWPM / 100) * 100, 100);
-  barEl.style.width = pct + '%';
-
-  if (metrics.isEligible) {
-    wpmEl.style.color = 'var(--green)';
-    barEl.style.background = 'var(--green)';
-  } else if (metrics.netWPM < MIN_WPM || metrics.hasSuspicion) {
-    wpmEl.style.color = 'var(--red)';
-    barEl.style.background = 'var(--red)';
-  } else {
-    wpmEl.style.color = 'var(--orange)';
-    barEl.style.background = 'var(--orange)';
-  }
-
-  if (metrics.progress >= 0.6 || metrics.hasSuspicion || metrics.isEligible) {
-    showBaselineResult(metrics);
-  }
+  const errorChars = baselineMetrics?.errorChars || 0;
+  const attemptedChars = baselineMetrics?.attemptedChars || typed.length;
+  const progress = correct / BASELINE_TEXT.length;
+  const accuracy = attemptedChars > 0 ? correct / attemptedChars : 0;
+  const elapsedMin = elapsedMs / 60000;
+  const rawWPM = elapsedMin > 0 ? Math.round((attemptedChars / 5) / elapsedMin) : 0;
+  const netWPM = elapsedMin > 0 ? Math.round((correct / 5) / elapsedMin) : 0;
+  const repeatStreak = baselineMetrics?.repeatKeyEvents > 10;
+  const isEligible = progress >= BASELINE_MIN_COMPLETION && accuracy >= BASELINE_MIN_ACCURACY &&
+    netWPM >= MIN_WPM && elapsedMs >= BASELINE_MIN_ELAPSED_MS && !baselineMetrics?.pasteAttempted && !repeatStreak;
+  const hasSuspicion = baselineMetrics?.pasteAttempted || repeatStreak;
+  return {
+    typed, correctChars:correct, errorChars, attemptedChars, progress, accuracy,
+    netWPM, rawWPM, elapsedMs, isEligible, hasSuspicion,
+    pasteAttempted: baselineMetrics?.pasteAttempted||false,
+    repeatKeyEvents: baselineMetrics?.repeatKeyEvents||0,
+    suspiciousRepeatStreak: repeatStreak
+  };
 }
 
 function handleBaselineKeydown(e) {
-  if (!baselineStart && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key.length === 1 || e.key === 'Backspace')) {
-    baselineStart = Date.now();
-    baselineActive = true;
+  if (!baselineStart && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key.length===1||e.key==='Backspace')) {
+    baselineStart = Date.now(); baselineActive = true;
   }
-
-  if (e.ctrlKey || e.metaKey) {
-    if (['v','x','a'].includes((e.key || '').toLowerCase())) {
-      handleBaselinePaste(e);
-      return;
-    }
+  if (e.ctrlKey||e.metaKey) {
+    if (['v','x','a','z'].includes((e.key||'').toLowerCase())) { handleBaselinePaste(e); return; }
   }
-
   if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Tab'].includes(e.key)) {
+    e.preventDefault(); focusBaselineCapture(); return;
+  }
+  if (e.repeat && baselineMetrics) baselineMetrics.repeatKeyEvents = (baselineMetrics.repeatKeyEvents||0)+1;
+  if (e.key==='Backspace') {
     e.preventDefault();
-    focusBaselineCapture();
+    if (baselineMetrics.typed.length>0) { baselineMetrics.typed=baselineMetrics.typed.slice(0,-1); handleBaselineInput(); }
+    else flashBaselineError();
     return;
   }
-
-  if (e.repeat && baselineMetrics) {
-    baselineMetrics.repeatKeyEvents = (baselineMetrics.repeatKeyEvents || 0) + 1;
-  }
-
-  if (e.key === 'Backspace') {
-    e.preventDefault();
-    if (baselineMetrics.typed.length > 0) {
-      baselineMetrics.typed = baselineMetrics.typed.slice(0, -1);
-      baselineMetrics.lastIncorrect = false;
-      handleBaselineInput();
-    } else {
-      flashBaselineError();
-    }
-    return;
-  }
-
-  if (e.key.length !== 1 || e.altKey) {
-    return;
-  }
-
+  if (e.key.length!==1||e.altKey) return;
   e.preventDefault();
-
-  const expectedIndex = baselineMetrics.correctChars || 0;
-  const expectedChar = BASELINE_TEXT[expectedIndex];
+  const expectedChar = BASELINE_TEXT[baselineMetrics.typed.length];
   if (!expectedChar) return;
-
-  if (e.key === expectedChar) {
-    baselineMetrics.typed += e.key;
+  baselineMetrics.attemptedChars = (baselineMetrics.attemptedChars || 0) + 1;
+  if (e.key===expectedChar) {
+    baselineMetrics.typed+=e.key;
     baselineMetrics.lastIncorrect = false;
     handleBaselineInput();
   } else {
+    baselineMetrics.errorChars = (baselineMetrics.errorChars || 0) + 1;
     baselineMetrics.lastIncorrect = true;
-    baselineMetrics.lastWrongKey = e.key;
     flashBaselineError();
-    renderBaselinePassage(baselineMetrics.typed, baselineMetrics);
-    showBaselineResult(evaluateBaselineAttempt(baselineMetrics.typed, baselineStart ? (Date.now() - baselineStart) : 0));
+    handleBaselineInput();
+    renderBaselinePassage(baselineMetrics.typed,baselineMetrics);
   }
-
   focusBaselineCapture();
+}
+
+function handleBaselineInput() {
+  if (!baselineStart) return;
+  const elapsedMs = Date.now()-baselineStart;
+  const metrics = evaluateBaselineAttempt(baselineMetrics.typed, elapsedMs);
+  baselineMetrics = { ...baselineMetrics, ...metrics };
+  baselineWPM = metrics.netWPM;
+  renderBaselinePassage(metrics.typed, metrics);
+  document.getElementById('bl-wpm').textContent = metrics.netWPM;
+  document.getElementById('bl-acc').textContent = Math.round(metrics.accuracy*100)+'%';
+  document.getElementById('bl-prog').textContent = Math.round(metrics.progress*100)+'%';
+  document.getElementById('bl-raw').textContent = metrics.rawWPM;
+  document.getElementById('wpm-live').textContent = metrics.netWPM;
+  const pct = Math.min((metrics.netWPM/100)*100,100);
+  const bar = document.getElementById('wpm-bar');
+  bar.style.width = pct+'%';
+  if (metrics.isEligible) { document.getElementById('wpm-live').style.color='var(--green)'; bar.style.background='var(--green)'; }
+  else if (metrics.hasSuspicion||metrics.netWPM<MIN_WPM) { document.getElementById('wpm-live').style.color='var(--red)'; bar.style.background='var(--red)'; }
+  else { document.getElementById('wpm-live').style.color='var(--orange)'; bar.style.background='var(--orange)'; }
+  if (metrics.progress>=0.6||metrics.isEligible||metrics.hasSuspicion) showBaselineResult(metrics);
 }
 
 function handleBaselinePaste(e) {
@@ -877,165 +764,68 @@ function handleBaselinePaste(e) {
   if (!baselineMetrics) baselineMetrics = makeEmptyBaselineMetrics();
   baselineMetrics.pasteAttempted = true;
   flashBaselineError();
-  showBaselineResult(evaluateBaselineAttempt(baselineMetrics.typed, baselineStart ? (Date.now() - baselineStart) : 0));
 }
 
-function isSkipModalOpen() {
-  const modal = document.getElementById('skip-modal');
-  return !!(modal && modal.style.display === 'flex');
-}
-
-function focusBaselineCapture() {
-  if (isSkipModalOpen()) return;
-  const capture = document.getElementById('baseline-capture');
-  const passage = document.getElementById('baseline-passage');
-  if (passage) passage.classList.add('focused');
-  if (capture) {
-    capture.focus({ preventScroll: true });
-    capture.value = '';
-    try { capture.setSelectionRange(0, 0); } catch (err) {}
-  }
-}
-
-function flashBaselineError() {
-  const passage = document.getElementById('baseline-passage');
-  if (!passage) return;
-  passage.classList.remove('error-flash', 'shake');
-  void passage.offsetWidth;
-  passage.classList.add('error-flash', 'shake');
-  clearTimeout(flashBaselineError._timer);
-  flashBaselineError._timer = setTimeout(() => {
-    passage.classList.remove('error-flash', 'shake');
-  }, 220);
-}
-
-function normalizeBaselineText(text) {
-  return (text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-}
-
-function makeEmptyBaselineMetrics() {
-  return {
-    typed: '',
-    netWPM: 0, rawWPM: 0, accuracy: 0, progress: 0, correctChars: 0, rawChars: 0,
-    elapsedMs: 0, mismatchCount: 0, pasteAttempted: false, repeatKeyEvents: 0,
-    suspiciousRepeatStreak: false, hasSuspicion: false, isEligible: false,
-    lastIncorrect: false, lastWrongKey: ''
-  };
-}
-
-function evaluateBaselineAttempt(typed, elapsedMs) {
-  const target = BASELINE_TEXT;
-  let correctChars = 0;
-  const max = Math.min(typed.length, target.length);
-  while (correctChars < max && typed[correctChars] === target[correctChars]) correctChars++;
-
-  const mismatchCount = Math.max(0, typed.length - correctChars);
-  const progress = target.length ? correctChars / target.length : 0;
-  const accuracy = typed.length ? correctChars / typed.length : 1;
-  const elapsedMin = elapsedMs / 60000;
-  const netWPM = elapsedMin > 0 ? Math.round((correctChars / 5) / elapsedMin) : 0;
-  const rawWPM = elapsedMin > 0 ? Math.round((typed.length / 5) / elapsedMin) : 0;
-  const suspiciousRepeatStreak = /(.)\1{6,}/.test(typed);
-  const pasteAttempted = !!(baselineMetrics && baselineMetrics.pasteAttempted);
-  const repeatKeyEvents = baselineMetrics ? (baselineMetrics.repeatKeyEvents || 0) : 0;
-  const hasSuspicion = pasteAttempted || suspiciousRepeatStreak || repeatKeyEvents > 10;
-  const isEligible = progress >= BASELINE_MIN_COMPLETION
-    && accuracy >= BASELINE_MIN_ACCURACY
-    && elapsedMs >= BASELINE_MIN_ELAPSED_MS
-    && netWPM >= MIN_WPM
-    && !hasSuspicion;
-
-  return {
-    typed,
-    netWPM, rawWPM, accuracy, progress, correctChars, rawChars: typed.length, elapsedMs, mismatchCount,
-    pasteAttempted, repeatKeyEvents, suspiciousRepeatStreak, hasSuspicion, isEligible,
-    lastIncorrect: baselineMetrics ? !!baselineMetrics.lastIncorrect : false,
-    lastWrongKey: baselineMetrics ? (baselineMetrics.lastWrongKey || '') : ''
-  };
-}
-
-function renderBaselineStats(metrics) {
-  document.getElementById('baseline-net-wpm').textContent = metrics.netWPM;
-  document.getElementById('baseline-raw-wpm').textContent = metrics.rawWPM;
-  document.getElementById('baseline-acc').textContent = `${Math.round(metrics.accuracy * 100)}%`;
-  document.getElementById('baseline-progress').textContent = `${Math.round(metrics.progress * 100)}%`;
-}
-
-function renderBaselinePassage(typed = '', metrics = null) {
-  const target = BASELINE_TEXT;
-  let correctChars = metrics ? metrics.correctChars : 0;
-  let out = '';
-  for (let i = 0; i < target.length; i++) {
-    const ch = escapeHtml(target[i]);
-    if (i < correctChars) out += `<span class="char correct">${ch}</span>`;
-    else if (i === correctChars && metrics && metrics.lastIncorrect) out += `<span class="char incorrect">${ch}</span>`;
-    else if (i === correctChars) out += `<span class="char current">${ch}</span>`;
-    else out += `<span class="char pending">${ch}</span>`;
-  }
-  document.getElementById('baseline-passage').innerHTML = out;
-}
-
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function showBaselineResult(result = baselineMetrics) {
-  if (!result) return;
-  baselineMetrics = result;
+function showBaselineResult(metrics) {
   const fb = document.getElementById('baseline-feedback');
   const btn = document.getElementById('baseline-next-btn');
-
-  const reasons = [];
-  if (result.progress < BASELINE_MIN_COMPLETION) reasons.push(`complete at least ${Math.round(BASELINE_MIN_COMPLETION * 100)}% of the passage in order`);
-  if (result.accuracy < BASELINE_MIN_ACCURACY) reasons.push(`keep accuracy at ${Math.round(BASELINE_MIN_ACCURACY * 100)}% or higher`);
-  if (result.netWPM < MIN_WPM) reasons.push(`reach at least ${MIN_WPM} net WPM`);
-  if (result.elapsedMs < BASELINE_MIN_ELAPSED_MS) reasons.push(`spend at least ${Math.round(BASELINE_MIN_ELAPSED_MS / 1000)} seconds on the passage`);
-  if (result.pasteAttempted) reasons.push('pasting is blocked for the baseline test');
-  if (result.suspiciousRepeatStreak) reasons.push('repeated-character spam was detected');
-  if (result.repeatKeyEvents > 10) reasons.push('held-key repeat events were detected');
-
-  if (result.isEligible) {
-    fb.innerHTML = `<div class="info-box ok"><strong>Eligible (${result.netWPM} net WPM).</strong> Baseline recorded using correct character progress, not raw key spam. Accuracy: ${Math.round(result.accuracy * 100)}%. Progress: ${Math.round(result.progress * 100)}%.</div>`;
+  if (metrics.isEligible) {
+    fb.innerHTML = `<div class="info-box ok"><strong>Eligible — ${metrics.netWPM} net WPM.</strong> Accuracy: ${Math.round(metrics.accuracy*100)}%. Progress: ${Math.round(metrics.progress*100)}%. Baseline recorded.</div>`;
     btn.textContent = 'Continue to Instructions →';
     btn.classList.remove('danger');
     btn.disabled = false;
     btn.onclick = baselineDone;
   } else {
-    const detail = reasons.length ? `Requirements not met yet: ${reasons.join(' · ')}.` : 'Keep typing naturally to finish the baseline.';
-    const severe = result.hasSuspicion || (result.progress >= BASELINE_MIN_COMPLETION && result.netWPM < MIN_WPM);
-    fb.innerHTML = `<div class="info-box ${severe ? 'danger' : 'warn'}"><strong>${severe ? 'Baseline not valid yet.' : 'Keep going.'}</strong> Net WPM is based only on correct in-order characters. ${detail}</div>`;
-    btn.textContent = severe ? 'View Rejection →' : 'Continue to Instructions →';
-    btn.classList.toggle('danger', severe);
-    btn.disabled = !severe;
-    btn.onclick = severe ? () => showRejected(result.netWPM) : baselineDone;
+    const reasons = [];
+    if (metrics.progress<BASELINE_MIN_COMPLETION) reasons.push(`complete ≥${Math.round(BASELINE_MIN_COMPLETION*100)}% of passage`);
+    if (metrics.accuracy<BASELINE_MIN_ACCURACY) reasons.push(`accuracy ≥${Math.round(BASELINE_MIN_ACCURACY*100)}%`);
+    if (metrics.netWPM<MIN_WPM) reasons.push(`≥${MIN_WPM} net WPM`);
+    if (metrics.elapsedMs<BASELINE_MIN_ELAPSED_MS) reasons.push(`≥${BASELINE_MIN_ELAPSED_MS/1000}s elapsed`);
+    if (metrics.pasteAttempted) reasons.push('no pasting');
+    if (metrics.suspiciousRepeatStreak) reasons.push('no key-repeat spam');
+    const severe = metrics.hasSuspicion||(metrics.progress>=BASELINE_MIN_COMPLETION&&metrics.netWPM<MIN_WPM);
+    fb.innerHTML = `<div class="info-box ${severe?'danger':'warn'}"><strong>${severe?'Baseline invalid.':'Keep going.'}</strong> ${reasons.length?'Requirements not yet met: '+reasons.join(' · ')+'.':'Continue typing.'}</div>`;
+    if (severe) {
+      btn.textContent = 'View Rejection →'; btn.classList.add('danger'); btn.disabled=false;
+      btn.onclick = ()=>{ document.getElementById('rej-pid').textContent=meta.participantId; document.getElementById('rej-wpm').textContent=metrics.netWPM; goTo('screen-rejected'); };
+    } else { btn.disabled=true; btn.classList.remove('danger'); }
   }
 }
 
-function showRejected(wpm) {
-  document.getElementById('rej-wpm').textContent = wpm;
-  document.getElementById('rej-pid').textContent = meta.participantId;
-  goTo('screen-rejected');
+function flashBaselineError() {
+  const p = document.getElementById('baseline-passage');
+  if(!p) return;
+  p.classList.remove('error-flash','shake'); void p.offsetWidth;
+  p.classList.add('error-flash','shake');
+  clearTimeout(flashBaselineError._t);
+  flashBaselineError._t = setTimeout(()=>p.classList.remove('error-flash','shake'),220);
+}
+
+function focusBaselineCapture() {
+  if (isSkipModalOpen()) return;
+  const cap = document.getElementById('baseline-capture');
+  const pass = document.getElementById('baseline-passage');
+  if (pass) pass.classList.add('focused');
+  if (cap) { cap.focus({preventScroll:true}); cap.value=''; try{cap.setSelectionRange(0,0);}catch(e){} }
+}
+
+function isSkipModalOpen() {
+  const m = document.getElementById('skip-modal');
+  return !!(m && m.style.display==='flex');
 }
 
 function baselineDone() {
   meta.baselineWPM = baselineWPM;
   meta.baselineMetrics = baselineMetrics ? { ...baselineMetrics } : null;
-
-  // Instructions screen
   document.getElementById('i-pid').textContent = meta.participantId;
   document.getElementById('i-cond').textContent = COND_LABELS[meta.condition];
   document.getElementById('i-wpm').textContent = baselineWPM;
   document.getElementById('i-dur').textContent = meta.durationMinutes;
-
   const instrMap = {
-    brain: `<div class="info-box"><strong>Brain-Only condition.</strong> Write your essay using only your own knowledge and memory. Do not open any other browser tabs. Do not use a search engine. Do not use any AI tool. If you cannot recall a fact, reason through it or skip it. The quality of the essay is not being evaluated — your natural writing process is.</div>`,
-    search: `<div class="info-box"><strong>Search Engine condition.</strong> You may use a search engine (Google, Bing, etc.) to look up information. Open a separate tab to search. Do not use any AI tools such as ChatGPT, Claude, or Gemini. Write the essay in your own words using search results only as reference.</div>`,
-    llm: `<div class="info-box"><strong>LLM-Assisted condition.</strong> You may use any AI language model (ChatGPT, Claude, Gemini, etc.) however you like — for ideas, outlines, full paragraphs, or anything else. There are no restrictions. Work naturally.</div>`
+    brain: `<div class="info-box danger"><strong>Brain-Only condition.</strong> Write entirely from your own knowledge and memory. Do not open any other browser tabs or applications. Do not use a search engine, AI tool, notes, books, or any external resource. If you cannot recall a fact, reason through it or skip it. The quality of your essay is not evaluated — your natural writing process is what matters.</div>
+            <div class="info-box warn"><strong>Fullscreen required.</strong> This condition runs in fullscreen. Exiting fullscreen is logged. If you need to stop, inform the researcher.</div>`,
+    search: `<div class="info-box info"><strong>Search Engine condition.</strong> You may use a search engine (Google, Bing, etc.) to look up information in a separate browser tab. Do not use any AI tools (ChatGPT, Claude, Gemini, etc.). Write the essay in your own words, using search results only as reference.</div>`,
+    llm: `<div class="info-box warn"><strong>LLM-Assisted condition.</strong> You may use any AI language model (ChatGPT, Claude, Gemini, etc.) however you like — for ideas, outlines, full paragraphs, or anything else. Work naturally. There are no restrictions on how you use the tool.</div>`
   };
   document.getElementById('cond-instructions').innerHTML = instrMap[meta.condition];
   goTo('screen-instructions');
@@ -1045,48 +835,32 @@ function baselineDone() {
 //  PHASE 2 — WRITING
 // ════════════════════════════════════════════
 function beginWriting() {
-  // Reset
-  events = [];
-  keyDownMap = new Map();
-  lastKeyDownTime = null;
-  cntKeys = 0; cntBackspace = 0; cntPause = 0; cntBursts = 0;
-  activeBurstLen = 0; burstLengths = [];
-  pressSeq = 0;
-  hasEnded = false;
-  isWriting = true;
-
+  events=[]; keyDownMap=new Map(); lastKeyDownTime=null;
+  cntKeys=0; cntBackspace=0; cntPause=0; cntBursts=0;
+  activeBurstLen=0; burstLengths=[]; pressSeq=0;
+  hasEnded=false; isWriting=true; sessionEndTime=null;
   const area = document.getElementById('essay-area');
-  area.value = '';
-  area.disabled = false;
-
-  // Fill UI
-  document.getElementById('write-prompt-text').textContent = PROMPTS[meta.promptIndex];
+  area.value=''; area.disabled=false;
+  document.getElementById('write-prompt-text').textContent = PROMPTS[meta.promptIndex].text;
   document.getElementById('write-pid-lbl').textContent = `${meta.participantId} · S${meta.session}`;
   const badge = document.getElementById('cond-badge');
-  badge.className = `badge ${meta.condition}`;
-  badge.textContent = COND_LABELS[meta.condition];
-
-  // Reset live UI
-  document.getElementById('lv-keys').textContent = '0';
-  document.getElementById('lv-wpm').textContent = '0';
-  document.getElementById('lv-words').textContent = '0';
-  document.getElementById('lv-pauses').textContent = '0';
-  document.getElementById('lv-bs').textContent = '0';
-  document.getElementById('lv-bursts').textContent = '0';
-
-  // Status
-  setStatus('rec', 'recording');
+  badge.className=`badge ${meta.condition}`; badge.textContent=COND_LABELS[meta.condition];
+  ['lv-keys','lv-words','lv-wpm','lv-pauses','lv-bs','lv-bursts'].forEach(id=>document.getElementById(id).textContent='0');
+  setStatus('rec','recording');
   goTo('screen-write');
-
-  sessionStart = Date.now();
-  startCountdown(meta.durationMinutes * 60);
-  if (liveInt) clearInterval(liveInt);
-  liveInt = setInterval(updateLive, 1500);
-  if (autoSaveInt) clearInterval(autoSaveInt);
-  autoSaveInt = setInterval(saveDraftSnapshot, 2000);
+  sessionStart=Date.now();
+  startCountdown(meta.durationMinutes*60);
+  if(liveInt) clearInterval(liveInt);
+  liveInt=setInterval(updateLive,1500);
+  if(autoSaveInt) clearInterval(autoSaveInt);
+  autoSaveInt=setInterval(saveDraftSnapshot,2000);
   attachWritingListeners();
   area.focus();
   saveDraftSnapshot();
+  // Request fullscreen for brain condition
+  if (meta.condition==='brain') {
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }
 }
 
 function attachWritingListeners() {
@@ -1094,756 +868,990 @@ function attachWritingListeners() {
   const area = document.getElementById('essay-area');
 
   area.addEventListener('keydown', e => {
-    if (!isWriting || hasEnded) return;
+    if (!isWriting||hasEnded) return;
+    const now=Date.now(), elapsed=now-sessionStart;
+    const cat=keyCategory(e.key);
 
-    const now = Date.now();
-    const elapsed = now - sessionStart;
-    const cat = keyCategory(e.key);
-    const physicalKey = getPhysicalKeyId(e);
-    const iki = lastKeyDownTime !== null ? (now - lastKeyDownTime) : null;
-    const ikiCapped = (iki !== null && iki > IKI_OUTLIER_MAX) ? IKI_OUTLIER_MAX : iki;
-
-    if (iki !== null && iki > PAUSE_THRESHOLD_MS) cntPause++;
-
-    if (iki === null || iki > BURST_GAP_MS) {
-      if (activeBurstLen > 0) { burstLengths.push(activeBurstLen); cntBursts++; }
-      activeBurstLen = 1;
-    } else {
-      activeBurstLen++;
+    // Block paste, undo, cut
+    if (e.ctrlKey||e.metaKey) {
+      const k=(e.key||'').toLowerCase();
+      if (['v','z','x'].includes(k)) {
+        e.preventDefault();
+        const evtType = k==='v'||k==='x' ? 'paste_blocked' : 'undo_blocked';
+        events.push({t:elapsed,type:'META',cat:evtType,iki:null});
+        return;
+      }
     }
 
-    if (cat === 'backspace') cntBackspace++;
+    const physicalKey = `${e.code||e.key}::${e.location||0}`;
+    const iki = lastKeyDownTime!==null ? (now-lastKeyDownTime) : null;
+    const ikiStored = (iki!==null&&iki>IKI_OUTLIER_MAX) ? null : iki;
+    if (iki!==null&&iki>PAUSE_THRESHOLD_MS) cntPause++;
+    if (iki===null||iki>BURST_GAP_MS) {
+      if (activeBurstLen>0){burstLengths.push(activeBurstLen);cntBursts++;}
+      activeBurstLen=1;
+    } else { activeBurstLen++; }
+    if (cat==='backspace'||cat==='delete') cntBackspace++;
     cntKeys++;
-
-    const pressId = ++pressSeq;
-    const pressRecord = {
-      pressId,
-      tDownAbs: now,
-      tDown: elapsed,
-      key: e.key,
-      code: e.code || '',
-      cat
-    };
-
-    if (!keyDownMap.has(physicalKey)) keyDownMap.set(physicalKey, []);
-    keyDownMap.get(physicalKey).push(pressRecord);
-
-    lastKeyDownTime = now;
-
-    events.push({
-      pressId,
-      t: elapsed,
-      type: 'D',
-      key: sanitizeKeyLabel(e.key),
-      code: e.code || '',
-      cat,
-      iki: ikiCapped,
-      rawIki: iki,
-      pauseFlag: (iki !== null && iki > PAUSE_THRESHOLD_MS) ? 1 : 0,
-      burstPos: activeBurstLen,
-      cumKeys: cntKeys
-    });
-
+    const pressId=++pressSeq;
+    const pr={pressId,tDownAbs:now,tDown:elapsed,key:e.key,code:e.code||'',cat};
+    if (!keyDownMap.has(physicalKey)) keyDownMap.set(physicalKey,[]);
+    keyDownMap.get(physicalKey).push(pr);
+    lastKeyDownTime=now;
+    events.push({pressId,t:elapsed,type:'D',key:sanitizeKey(e.key),code:e.code||'',cat,
+      iki:ikiStored,rawIki:iki,pauseFlag:(iki!==null&&iki>PAUSE_THRESHOLD_MS)?1:0,
+      burstPos:activeBurstLen,cumKeys:cntKeys});
     updateLiveCounters();
   });
 
   area.addEventListener('keyup', e => {
     if (!isWriting) return;
-
-    const now = Date.now();
-    const elapsed = now - sessionStart;
-    const cat = keyCategory(e.key);
-    const physicalKey = getPhysicalKeyId(e);
-    const queue = keyDownMap.get(physicalKey) || [];
-    const pressRecord = queue.length ? queue.shift() : null;
-    if (queue.length === 0) keyDownMap.delete(physicalKey);
-
-    const holdMs = pressRecord ? (now - pressRecord.tDownAbs) : null;
-    events.push({
-      pressId: pressRecord ? pressRecord.pressId : null,
-      t: elapsed,
-      type: 'U',
-      key: sanitizeKeyLabel(e.key),
-      code: e.code || '',
-      cat,
-      hold: (holdMs !== null && holdMs >= 0 && holdMs < 10000) ? holdMs : null
-    });
+    const now=Date.now(), elapsed=now-sessionStart;
+    const cat=keyCategory(e.key);
+    const physicalKey=`${e.code||e.key}::${e.location||0}`;
+    const queue=keyDownMap.get(physicalKey)||[];
+    const pr=queue.length?queue.shift():null;
+    if(queue.length===0) keyDownMap.delete(physicalKey);
+    const holdMs=pr?(now-pr.tDownAbs):null;
+    events.push({pressId:pr?pr.pressId:null,t:elapsed,type:'U',key:sanitizeKey(e.key),
+      code:e.code||'',cat,hold:(holdMs!==null&&holdMs>=0&&holdMs<10000)?holdMs:null});
   });
 
-  writingListenersBound = true;
+  // Block paste and drop
+  area.addEventListener('paste', e => {
+    e.preventDefault();
+    if (!isWriting||hasEnded) return;
+    events.push({t:Date.now()-sessionStart,type:'META',cat:'paste_blocked',iki:null});
+  });
+  area.addEventListener('cut', e => { e.preventDefault(); });
+  area.addEventListener('drop', e => {
+    e.preventDefault();
+    if (!isWriting||hasEnded) return;
+    events.push({t:Date.now()-sessionStart,type:'META',cat:'paste_blocked',iki:null});
+  });
+  area.addEventListener('contextmenu', e => e.preventDefault());
+
+  // Log mouse repositioning — flags the next IKI as potentially contaminated
+  area.addEventListener('mousedown', e => {
+    if (!isWriting||hasEnded) return;
+    events.push({t:Date.now()-sessionStart,type:'META',cat:'mouse_reposition',iki:null});
+  });
+
+  writingListenersBound=true;
+}
+
+// Fullscreen change handler
+document.addEventListener('fullscreenchange', () => {
+  if (!isWriting||hasEnded) return;
+  if (!document.fullscreenElement && meta.condition==='brain') {
+    events.push({t:Date.now()-sessionStart,type:'META',cat:'fullscreen_exit',iki:null});
+    document.getElementById('fs-warning').classList.add('show');
+  }
+});
+
+function reenterFullscreen() {
+  document.getElementById('fs-warning').classList.remove('show');
+  document.documentElement.requestFullscreen().catch(()=>{});
+}
+
+// Tab visibility
+function bindGlobalListeners() {
+  document.addEventListener('visibilitychange', () => {
+    if (!isWriting||!sessionStart||hasEnded) return;
+    events.push({t:Date.now()-sessionStart,type:'META',cat:document.hidden?'tab_hidden':'tab_visible',iki:null});
+    saveDraftSnapshot();
+  });
+  window.addEventListener('beforeunload', () => { if(isWriting&&!hasEnded) saveDraftSnapshot(); });
 }
 
 function keyCategory(key) {
-  if (key === 'Backspace') return 'backspace';
-  if (key === 'Delete') return 'delete';
-  if (key === ' ') return 'space';
+  if (key==='Backspace') return 'backspace';
+  if (key==='Delete') return 'delete';
+  if (key===' ') return 'space';
   if (['.','?','!'].includes(key)) return 'sent_end';
   if ([',',';',':'].includes(key)) return 'punct';
-  if (key === 'Enter') return 'enter';
-  if (key === 'Tab') return 'tab';
+  if (key==='Enter') return 'enter';
+  if (key==='Tab') return 'tab';
   if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)) return 'arrow';
   if (['Home','End','PageUp','PageDown'].includes(key)) return 'nav';
-  if (key.length === 1 && key >= 'a' && key <= 'z') return 'alpha_lower';
-  if (key.length === 1 && key >= 'A' && key <= 'Z') return 'alpha_upper';
-  if (key.length === 1 && key >= '0' && key <= '9') return 'digit';
-  if (key.length === 1) return 'symbol';
+  if (key.length===1&&key>='a'&&key<='z') return 'alpha_lower';
+  if (key.length===1&&key>='A'&&key<='Z') return 'alpha_upper';
+  if (key.length===1&&key>='0'&&key<='9') return 'digit';
+  if (key.length===1) return 'symbol';
   return 'other';
 }
 
-function getPhysicalKeyId(e) {
-  return `${e.code || e.key}::${e.location || 0}`;
-}
-
-function sanitizeKeyLabel(key) {
-  const named = ['Backspace','Delete','Enter','Tab','Shift','Control','Alt','Meta','CapsLock','Escape',
+function sanitizeKey(key) {
+  const named=['Backspace','Delete','Enter','Tab','Shift','Control','Alt','Meta','CapsLock','Escape',
     'ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'];
   if (named.includes(key)) return key;
-  if (key === ' ') return 'Space';
-  if (key.length === 1) return key;
+  if (key===' ') return 'Space';
+  if (key.length===1) return key;
   return 'Other';
 }
 
 function updateLiveCounters() {
-  document.getElementById('lv-keys').textContent = cntKeys;
-  document.getElementById('lv-pauses').textContent = cntPause;
-  document.getElementById('lv-bs').textContent = cntBackspace;
-  document.getElementById('lv-bursts').textContent = cntBursts + (activeBurstLen > 0 ? 1 : 0);
+  document.getElementById('lv-keys').textContent=cntKeys;
+  document.getElementById('lv-pauses').textContent=cntPause;
+  document.getElementById('lv-bs').textContent=cntBackspace;
+  document.getElementById('lv-bursts').textContent=cntBursts+(activeBurstLen>0?1:0);
 }
 
-function bindGlobalListeners() {
-  document.addEventListener('visibilitychange', () => {
-    if (!isWriting || !sessionStart || hasEnded) return;
-    const now = Date.now();
-    const elapsed = now - sessionStart;
-    events.push({
-      t: elapsed,
-      type: 'META',
-      cat: document.hidden ? 'tab_hidden' : 'tab_visible',
-      iki: null
-    });
-    saveDraftSnapshot();
-  });
-
-  window.addEventListener('beforeunload', () => {
-    if (isWriting && !hasEnded) saveDraftSnapshot();
-  });
+function updateLive() {
+  const text=document.getElementById('essay-area').value;
+  const words=text.trim().split(/\s+/).filter(w=>w.length>0).length;
+  const mins=(Date.now()-sessionStart)/60000;
+  document.getElementById('lv-wpm').textContent=mins>0.1?Math.round(words/mins):0;
+  document.getElementById('lv-words').textContent=words;
 }
-
-function saveDraftSnapshot() {
-  if (!isWriting || !sessionStart || hasEnded) return;
-  const payload = {
-    meta,
-    baselineWPM,
-    sessionStart,
-    lastKeyDownTime,
-    cntKeys,
-    cntBackspace,
-    cntPause,
-    cntBursts,
-    activeBurstLen,
-    burstLengths,
-    pressSeq,
-    events,
-    essayText: document.getElementById('essay-area').value,
-    savedAt: new Date().toISOString()
-  };
-  sessionStorage.setItem('cogtype_recovery', JSON.stringify(payload));
-}
-
-function restoreDraftIfAvailable() {
-  try {
-    const raw = sessionStorage.getItem('cogtype_recovery');
-    if (!raw) return;
-    const snap = JSON.parse(raw);
-    if (!snap || !snap.meta || !snap.essayText) return;
-
-    const setupBox = document.querySelector('#screen-setup .sub');
-    if (setupBox) {
-      const msg = document.createElement('div');
-      msg.className = 'info-box warn';
-      msg.innerHTML = `<strong>Recovery available.</strong> An unfinished session for participant <strong>${snap.meta.participantId || '—'}</strong> was found on this device from ${new Date(snap.savedAt).toLocaleString()}. Use the button below to restore it.`;
-      const btnRow = document.querySelector('#screen-setup .btn-row');
-      btnRow.parentNode.insertBefore(msg, btnRow);
-      const btn = document.createElement('button');
-      btn.className = 'btn ghost';
-      btn.textContent = 'Restore unfinished session';
-      btn.onclick = () => restoreFromSnapshot(snap);
-      btnRow.prepend(btn);
-    }
-  } catch (err) {
-    sessionStorage.removeItem('cogtype_recovery');
-  }
-}
-
-function restoreFromSnapshot(snap) {
-  meta = snap.meta || {};
-  baselineWPM = snap.baselineWPM || 0;
-  events = Array.isArray(snap.events) ? snap.events : [];
-  sessionStart = snap.sessionStart || Date.now();
-  lastKeyDownTime = snap.lastKeyDownTime || null;
-  cntKeys = snap.cntKeys || 0;
-  cntBackspace = snap.cntBackspace || 0;
-  cntPause = snap.cntPause || 0;
-  cntBursts = snap.cntBursts || 0;
-  activeBurstLen = snap.activeBurstLen || 0;
-  burstLengths = Array.isArray(snap.burstLengths) ? snap.burstLengths : [];
-  pressSeq = snap.pressSeq || 0;
-  keyDownMap = new Map();
-  hasEnded = false;
-  isWriting = true;
-
-  document.getElementById('write-prompt-text').textContent = PROMPTS[meta.promptIndex];
-  document.getElementById('write-pid-lbl').textContent = `${meta.participantId} · S${meta.session}`;
-  const badge = document.getElementById('cond-badge');
-  badge.className = `badge ${meta.condition}`;
-  badge.textContent = COND_LABELS[meta.condition];
-  const area = document.getElementById('essay-area');
-  area.value = snap.essayText || '';
-  area.disabled = false;
-
-  updateLiveCounters();
-  updateLive();
-  setStatus('warn', 'restored');
-  goTo('screen-write');
-
-  const elapsedSecs = Math.max(0, Math.floor((Date.now() - sessionStart) / 1000));
-  const remainingSecs = Math.max(0, (meta.durationMinutes * 60) - elapsedSecs);
-  startCountdown(remainingSecs);
-  if (liveInt) clearInterval(liveInt);
-  liveInt = setInterval(updateLive, 1500);
-  if (autoSaveInt) clearInterval(autoSaveInt);
-  autoSaveInt = setInterval(saveDraftSnapshot, 2000);
-  attachWritingListeners();
-  area.focus();
-}
-
-
-function renderConsentModal() {
-  const body = document.getElementById('consent-body');
-  body.innerHTML = `
-    <div class="info-box warn">
-      <strong>Please review before participating.</strong> This screen is a template aligned to common human-subject informed-consent elements, but you still need your own IRB / ethics review to approve the exact language and process for your study.
-    </div>
-    <p><strong>Study title:</strong> ${CONSENT_CONFIG.studyTitle}</p>
-    <p><strong>Researcher:</strong> ${CONSENT_CONFIG.researcherName} · ${CONSENT_CONFIG.researcherEmail}</p>
-    <p><strong>IRB / Ethics contact:</strong> ${CONSENT_CONFIG.irbName} · ${CONSENT_CONFIG.irbContact}</p>
-    <hr>
-    <p><strong>Purpose.</strong> ${CONSENT_CONFIG.purpose}</p>
-    <p><strong>What you will do.</strong></p>
-    <ul>${CONSENT_CONFIG.procedures.map(x => `<li>${x}</li>`).join('')}</ul>
-    <p><strong>Expected time.</strong> ${CONSENT_CONFIG.duration}</p>
-    <p><strong>Reasonably foreseeable risks or discomforts.</strong></p>
-    <ul>${CONSENT_CONFIG.risks.map(x => `<li>${x}</li>`).join('')}</ul>
-    <p><strong>Potential benefits.</strong></p>
-    <ul>${CONSENT_CONFIG.benefits.map(x => `<li>${x}</li>`).join('')}</ul>
-    <p><strong>Compensation.</strong> ${CONSENT_CONFIG.compensation}</p>
-    <p><strong>Confidentiality.</strong> ${CONSENT_CONFIG.confidentiality}</p>
-    <p><strong>Voluntary participation.</strong> ${CONSENT_CONFIG.voluntary}</p>
-    <p><strong>Withdrawal.</strong> ${CONSENT_CONFIG.withdrawal}</p>
-    <p><strong>Questions and participant rights.</strong> ${CONSENT_CONFIG.questions}</p>
-    <p><strong>Terms of use.</strong></p>
-    <ul>${CONSENT_CONFIG.termsOfService.map(x => `<li>${x}</li>`).join('')}</ul>
-    <div class="consent-check">
-      <input id="consent-checkbox" type="checkbox" onchange="updateConsentButton()">
-      <label for="consent-checkbox" style="margin:0; font-size:13px; text-transform:none; letter-spacing:0; font-weight:400; color:var(--text);">
-        I have read the consent information and terms of use, had the chance to ask questions if applicable, and voluntarily agree to participate. ${CONSENT_CONFIG.adultStatement}
-      </label>
-    </div>
-    <p class="subtle" style="margin-top:12px;">Consent version: ${CONSENT_VERSION}</p>
-  `;
-}
-
-function updateConsentButton() {
-  const checked = document.getElementById('consent-checkbox')?.checked;
-  document.getElementById('consent-agree-btn').disabled = !checked;
-  document.getElementById('consent-error').textContent = checked
-    ? 'Consent checkbox selected.'
-    : 'You must review and agree before continuing.';
-}
-
-function hasStoredConsent() {
-  try { return !!localStorage.getItem(CONSENT_STORAGE_KEY); }
-  catch (e) { return false; }
-}
-
-function enforceConsentGate() {
-  if (hasStoredConsent()) return;
-  const modal = document.getElementById('consent-modal');
-  modal.classList.add('show');
-  modal.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
-  setStatus('warn', 'consent required');
-}
-
-function acceptConsent() {
-  const payload = {
-    acceptedAt: new Date().toISOString(),
-    consentVersion: CONSENT_VERSION
-  };
-  localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(payload));
-  meta.consentAcceptedAt = payload.acceptedAt;
-  meta.consentVersion = payload.consentVersion;
-  closeConsentModal();
-  setStatus('', 'idle');
-}
-
-function declineConsent() {
-  alert('Consent was not provided. The study app will remain blocked on this device until the page is closed.');
-}
-
-function closeConsentModal() {
-  const modal = document.getElementById('consent-modal');
-  modal.classList.remove('show');
-  modal.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
-}
-
-function attachConsentToMeta() {
-  try {
-    const raw = localStorage.getItem(CONSENT_STORAGE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    meta.consentAcceptedAt = parsed.acceptedAt || null;
-    meta.consentVersion = parsed.consentVersion || CONSENT_VERSION;
-  } catch (e) {
-    meta.consentAcceptedAt = null;
-    meta.consentVersion = CONSENT_VERSION;
-  }
-}
-
 
 // ════════════════════════════════════════════
 //  TIMER
 // ════════════════════════════════════════════
 function startCountdown(secs) {
-  if (timerInt) clearInterval(timerInt);
-  let rem = secs;
+  if(timerInt) clearInterval(timerInt);
+  let rem=secs;
   renderTimer(rem);
-  timerInt = setInterval(() => {
-    rem--;
-    renderTimer(rem);
-    if (rem <= 0) { clearInterval(timerInt); endWriting(); }
-  }, 1000);
+  timerInt=setInterval(()=>{ rem--; renderTimer(rem); if(rem<=0){clearInterval(timerInt);endWriting(false);} },1000);
 }
 
 function renderTimer(s) {
-  const el = document.getElementById('timer-disp');
-  el.textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-  el.className = 'timer-big' + (s <= 60 ? ' crit' : s <= 180 ? ' warn' : '');
-}
-
-function updateLive() {
-  const text = document.getElementById('essay-area').value;
-  const words = text.trim().split(/\s+/).filter(w=>w.length>0).length;
-  const mins = (Date.now() - sessionStart) / 60000;
-  document.getElementById('lv-wpm').textContent = mins > 0.1 ? Math.round(words/mins) : 0;
-  document.getElementById('lv-words').textContent = words;
+  const el=document.getElementById('timer-disp');
+  el.textContent=`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  el.className='timer-big'+(s<=60?' crit':s<=180?' warn':'');
 }
 
 // ════════════════════════════════════════════
-//  END SESSION
+//  END WRITING
 // ════════════════════════════════════════════
-async function endWriting() {
+async function endWriting(early=false) {
   if (hasEnded) return;
-  hasEnded = true;
-  isWriting = false;
-  clearInterval(timerInt);
-  clearInterval(liveInt);
-  clearInterval(autoSaveInt);
-  if (activeBurstLen > 0) { burstLengths.push(activeBurstLen); cntBursts++; activeBurstLen = 0; }
-  setStatus('ok', 'complete');
-  const f = computeFeatures();
+  sessionEndTime = Date.now();
+  hasEnded=true; isWriting=false;
+  clearInterval(timerInt); clearInterval(liveInt); clearInterval(autoSaveInt);
+  if (activeBurstLen>0){burstLengths.push(activeBurstLen);cntBursts++;activeBurstLen=0;}
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  document.getElementById('fs-warning').classList.remove('show');
+  const area=document.getElementById('essay-area'); area.disabled=true;
+  meta.endedEarly=early;
+  setStatus('warn','survey');
+  buildPostTaskSurvey();
+  goTo('screen-posttask');
+}
+
+// ════════════════════════════════════════════
+//  PHASE 3 — POST-TASK SURVEY
+// ════════════════════════════════════════════
+function buildPostTaskSurvey() {
+  const cond=meta.condition;
+  const container=document.getElementById('pt-questions');
+  postTaskAnswers={};
+
+  const questions = [
+    { id:'familiarity', text:'How familiar were you with this topic before today?',
+      type:'scale', labels:['Not at all','Very familiar'], options:['1','2','3','4','5'] },
+    { id:'effort', text:'How much effort did you put into this essay?',
+      type:'scale', labels:['Minimal effort','Maximum effort'], options:['1','2','3','4','5'] },
+    ...(cond==='search'||cond==='llm' ? [{ id:'tool_usage', text:'How often did you consult the '+(cond==='llm'?'AI tool':'search engine')+' while writing?',
+      type:'options', options:['Never','Once or twice','Several times','Frequently — every few sentences','Constantly'] }] : []),
+    ...(cond==='llm' ? [{ id:'pct_own_words', text:'Roughly what percentage of your final essay came from your own original words (not copied or lightly paraphrased from the AI)?',
+      type:'options', options:['0% — almost entirely from AI','25%','50%','75%','100% — entirely my own words'] }] : []),
+    { id:'interruption', text:'Did anything interrupt you during the writing session?',
+      type:'options', options:['No — session was uninterrupted','Yes — minor interruption','Yes — significant interruption'] },
+    { id:'interruption_detail', text:'If yes, briefly describe the interruption (otherwise leave blank).',
+      type:'text', optional:true }
+  ];
+
+  container.innerHTML = questions.map(q => {
+    if (q.type==='scale') {
+      const btns = q.options.map(v=>`<button class="scale-btn" data-qid="${q.id}" data-val="${v}" onclick="selectScale(this,'${q.id}')">${v}</button>`).join('');
+      return `<div class="pt-question"><p>${q.text}</p><div class="scale-row">${btns}</div><div class="scale-labels"><span>${q.labels[0]}</span><span>${q.labels[1]}</span></div></div>`;
+    }
+    if (q.type==='options') {
+      const btns=q.options.map(v=>`<button class="option-btn" data-qid="${q.id}" data-val="${v}" onclick="selectOption(this,'${q.id}')">${v}</button>`).join('');
+      return `<div class="pt-question"><p>${q.text}</p><div class="option-row">${btns}</div></div>`;
+    }
+    if (q.type==='text') {
+      return `<div class="pt-question"><p>${q.text}${q.optional?' <span style="font-weight:400;color:var(--muted);font-size:12px;">(optional)</span>':''}</p><textarea class="pt-textarea" id="pt-${q.id}" oninput="postTaskAnswers['${q.id}']=this.value" placeholder="Optional..."></textarea></div>`;
+    }
+    return '';
+  }).join('');
+}
+
+function selectScale(btn, qid) {
+  document.querySelectorAll(`[data-qid="${qid}"]`).forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  postTaskAnswers[qid]=btn.dataset.val;
+}
+
+function selectOption(btn, qid) {
+  document.querySelectorAll(`[data-qid="${qid}"]`).forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  postTaskAnswers[qid]=btn.dataset.val;
+}
+
+function submitPostTask() {
+  // Required fields (non-text questions)
+  const required=['familiarity','effort'];
+  if (meta.condition==='search'||meta.condition==='llm') required.push('tool_usage');
+  if (meta.condition==='llm') required.push('pct_own_words');
+  required.push('interruption');
+  const missing=required.filter(k=>!postTaskAnswers[k]);
+  if (missing.length>0) {
+    alert('Please answer all required questions before continuing.');
+    return;
+  }
+  meta.postTask=postTaskAnswers;
+  const f=computeFeatures();
   renderResults(f);
   sessionStorage.removeItem('cogtype_recovery');
+  setStatus('ok','complete');
   goTo('screen-results');
-
 }
 
 // ════════════════════════════════════════════
 //  FEATURE COMPUTATION
 // ════════════════════════════════════════════
 function computeFeatures() {
-  const downs = events.filter(e => e.type === 'D');
-  const ups = events.filter(e => e.type === 'U');
-  const alphaDowns = downs.filter(e => e.cat === 'alpha_lower' || e.cat === 'alpha_upper');
-  const ikis = downs.map(e=>e.iki).filter(v=>v!==null && v>=0 && v<=IKI_OUTLIER_MAX);
+  const downs=events.filter(e=>e.type==='D');
+  const ikis=downs.map(e=>e.iki).filter(isValidIki);
+  const alphaDowns=downs.filter(e=>e.cat==='alpha_lower'||e.cat==='alpha_upper');
 
-  // ── Basic counts ──
-  const totalKeys = downs.length;
-  const nBackspace = downs.filter(e=>e.cat==='backspace').length;
-  const nDelete = downs.filter(e=>e.cat==='delete').length;
-  const nSpace = downs.filter(e=>e.cat==='space').length;
-  const nAlpha = alphaDowns.length;
-  const nSentEnd = downs.filter(e=>e.cat==='sent_end').length;
-  const nArrow = downs.filter(e=>e.cat==='arrow').length;
-  const nNav = downs.filter(e=>e.cat==='nav').length;
-  const tabSwitches = events.filter(e=>e.type==='META' && e.cat==='tab_hidden').length;
+  // ── PRIMARY: IKI Coefficient of Variation ──
+  const mIKI=mean(ikis);
+  const sIKI=stddev(ikis);
+  const ikiCoV = mIKI>0 ? round2(sIKI/mIKI) : null;
 
-  // ── IKI stats ──
-  const meanIKI = mean(ikis);
-  const medIKI = median(ikis);
-  const sdIKI = stddev(ikis);
-  const varIKI = sdIKI * sdIKI;
-  const cvIKI = meanIKI > 0 ? sdIKI / meanIKI : 0;  // coefficient of variation
+  // ── SECONDARY: Mean Burst Length ──
+  const allBursts=[...burstLengths];
+  if (activeBurstLen>0) allBursts.push(activeBurstLen);
+  const meanBurstLen=round2(mean(allBursts));
+  const medBurstLen=round2(median(allBursts));
 
-  // ── Pause stats ──
-  const pauseIKIs = ikis.filter(v=>v>PAUSE_THRESHOLD_MS);
-  const nPauses = pauseIKIs.length;
-  const meanPause = mean(pauseIKIs);
-  const maxPause = pauseIKIs.length ? Math.max(...pauseIKIs) : 0;
-  const pauseFreqPer100 = totalKeys > 0 ? (nPauses/totalKeys)*100 : 0;
-  const totalPauseTime = pauseIKIs.reduce((a,b)=>a+b,0);
-  const totalTime = events.length ? events[events.length-1].t : 1;
-  const pauseTimeFraction = totalTime > 0 ? totalPauseTime / totalTime : 0;
+  // ── SECONDARY: Revision Rate ──
+  const nBackspace=downs.filter(e=>e.cat==='backspace').length;
+  const nDelete=downs.filter(e=>e.cat==='delete').length;
+  const totalKeys=downs.length;
+  const revisionRate=totalKeys>0?round2((nBackspace+nDelete)/totalKeys*100):0;
 
-  // ── Pre-sentence pauses ──
-  const sentEndIdxs = downs.reduce((arr,e,i)=>{ if(e.cat==='sent_end') arr.push(i); return arr; },[]);
-  const preSentPauses = [];
-  sentEndIdxs.forEach(si => {
-    if (si+1 < downs.length) {
-      const gap = downs[si+1].iki;
-      if (gap !== null && gap >= PRE_SENT_MIN_MS) preSentPauses.push(gap);
-    }
-  });
-  const meanPreSent = mean(preSentPauses);
-  const medPreSent = median(preSentPauses);
-
-  // ── Burst stats ──
-  const nBursts = burstLengths.length;
-  const meanBurst = mean(burstLengths);
-  const medBurst = median(burstLengths);
-  const maxBurst = burstLengths.length ? Math.max(...burstLengths) : 0;
-  const sdBurst = stddev(burstLengths);
-
-  // ── Revision stats ──
-  const backspaceRate = totalKeys > 0 ? (nBackspace/totalKeys)*100 : 0;
-  const deleteRate = totalKeys > 0 ? (nDelete/totalKeys)*100 : 0;
-  const revisionRate = totalKeys > 0 ? ((nBackspace+nDelete)/totalKeys)*100 : 0;
-  const navRate = totalKeys > 0 ? ((nArrow+nNav)/totalKeys)*100 : 0;  // cursor movement = possible non-linear editing
-
-  // ── Hold time (alpha keys only) ──
-  const holdTimes = ups
-    .filter(e=>( e.cat==='alpha_lower'||e.cat==='alpha_upper') && e.hold!==null && e.hold > 0 && e.hold < 500)
-    .map(e=>e.hold);
-  const meanHold = mean(holdTimes);
-  const sdHold = stddev(holdTimes);
-  const medHold = median(holdTimes);
-
-  // ── Letter-transition latency (category-based, content-safe proxy) ──
-  const alphaToAlpha = [];
-  for (let i = 0; i < downs.length - 1; i++) {
-    const a = downs[i], b = downs[i + 1];
-    if ((a.cat === 'alpha_lower' || a.cat === 'alpha_upper') &&
-        (b.cat === 'alpha_lower' || b.cat === 'alpha_upper') &&
-        b.iki !== null) {
-      alphaToAlpha.push(b.iki);
+  // ── EXPLORATORY: Pre-sentence pause ──
+  const preSentPauses=[];
+  for (let i=1;i<downs.length;i++) {
+    if (downs[i-1].cat==='sent_end' && isValidIki(downs[i].iki) && downs[i].iki>PRE_SENT_MIN_MS) {
+      preSentPauses.push(downs[i].iki);
     }
   }
-  const meanAlphaAlphaIKI = mean(alphaToAlpha);
+  const meanPreSentPause=preSentPauses.length>0?Math.round(mean(preSentPauses)):null;
 
-  // ── WPM ──
-  const text = document.getElementById('essay-area').value;
-  const wordCount = text.trim().split(/\s+/).filter(w=>w.length>0).length;
-  const sessionMins = totalTime / 60000;
-  const wpm = sessionMins > 0 ? Math.round(wordCount / sessionMins) : 0;
-  const wpmVsBaseline = meta.baselineWPM > 0 ? ((wpm - meta.baselineWPM) / meta.baselineWPM * 100) : null;
+  // ── COVARIATE: Mean IKI, SD IKI ──
+  const meanIKI=Math.round(mIKI);
+  const medianIKI=Math.round(median(ikis));
+  const sdIKI=Math.round(sIKI);
 
-  // ── Rolling windows (70 keystrokes per window, non-overlapping) ──
-  const ROLLING_WINDOW_KEYS = 70;
-  function windowFeatures(sl, index) {
-    const si = sl.map(e=>e.iki).filter(v=>v!==null&&v<=IKI_OUTLIER_MAX);
-    const bs = sl.filter(e=>e.cat==='backspace').length;
-    const pa = sl.filter(e=>e.iki!==null&&e.iki>PAUSE_THRESHOLD_MS).length;
-    return {
-      label: `T${index + 1}`,
-      windowIndex: index + 1,
-      startKey: (index * ROLLING_WINDOW_KEYS) + 1,
-      endKey: (index * ROLLING_WINDOW_KEYS) + sl.length,
-      meanIKI: r(mean(si)),
-      sdIKI: r(stddev(si)),
-      pauseCount: pa,
-      backspaceCount: bs,
-      keyCount: sl.length
-    };
+  // ── ROLLING WINDOWS (temporal dynamics) ──
+  const winSize=Math.floor(downs.length/N_ROLLING_WINDOWS);
+  const rollingWindows=[];
+  for (let w=0;w<N_ROLLING_WINDOWS;w++) {
+    const start=w*winSize;
+    const end=(w===N_ROLLING_WINDOWS-1)?downs.length:start+winSize;
+    const wDowns=downs.slice(start,end);
+    const wIKIs=wDowns.map(e=>e.iki).filter(isValidIki);
+    const wMean=wIKIs.length ? Math.round(mean(wIKIs)) : null;
+    const wSd=stddev(wIKIs);
+    const wCoV=(wMean!==null && wMean>0)?round2(wSd/wMean):null;
+    const wBursts=wDowns.filter(e=>e.burstPos===1).length;
+    const wBS=wDowns.filter(e=>e.cat==='backspace'||e.cat==='delete').length;
+    rollingWindows.push({window:w+1,label:`Q${w+1} (${Math.round((w/N_ROLLING_WINDOWS)*100)}–${Math.round(((w+1)/N_ROLLING_WINDOWS)*100)}%)`,
+      startKey:start+1,endKey:end,keyCount:wDowns.length,meanIKI:wMean,ikiCoV:wCoV,burstCount:wBursts,backspaceCount:wBS});
   }
-  const rollingWindows = [];
-  for (let i = 0; i < downs.length; i += ROLLING_WINDOW_KEYS) {
-    const sl = downs.slice(i, i + ROLLING_WINDOW_KEYS);
-    if (!sl.length) continue;
-    rollingWindows.push(windowFeatures(sl, rollingWindows.length));
-  }
-  const third1 = rollingWindows[0] || windowFeatures([], 0);
-  const third2 = rollingWindows[1] || windowFeatures([], 1);
-  const third3 = rollingWindows[2] || windowFeatures([], 2);
 
-  // ── IKI distribution buckets ──
-  const ikiBuckets = {
-    sub100: ikis.filter(v=>v<100).length,
-    i100_300: ikis.filter(v=>v>=100&&v<300).length,
-    i300_1000: ikis.filter(v=>v>=300&&v<1000).length,
-    i1000_3000: ikis.filter(v=>v>=1000&&v<3000).length,
-    over3000: ikis.filter(v=>v>=3000).length,
-  };
+  // ── QUALITY FLAGS ──
+  const tabSwitches=events.filter(e=>e.type==='META'&&e.cat==='tab_hidden').length;
+  const pasteAttempts=events.filter(e=>e.type==='META'&&e.cat==='paste_blocked').length;
+  const undoEvents=events.filter(e=>e.type==='META'&&e.cat==='undo_blocked').length;
+  const fsExits=events.filter(e=>e.type==='META'&&e.cat==='fullscreen_exit').length;
+  const mouseRepos=events.filter(e=>e.type==='META'&&e.cat==='mouse_reposition').length;
+
+  const essayText=document.getElementById('essay-area').value;
+  const wordCount=essayText.trim().split(/\s+/).filter(w=>w.length>0).length;
+  const sessionDurationMs=(sessionStart && sessionEndTime) ? Math.max(0, sessionEndTime-sessionStart) : 0;
 
   return {
-    // session info
-    sessionMeta: { ...meta },
-
-    // counts
-    totalKeys, nAlpha, nBackspace, nDelete, nSpace, nSentEnd, nArrow, nNav, tabSwitches, wordCount, wpm, wpmVsBaseline,
-
-    // IKI
-    meanIKI: r(meanIKI), medIKI: r(medIKI), sdIKI: r(sdIKI), varIKI: r(varIKI), cvIKI: r2(cvIKI),
-
-    // pauses
-    nPauses, meanPause: r(meanPause), maxPause: r(maxPause), pauseFreqPer100: r2(pauseFreqPer100), totalPauseTime: r(totalPauseTime), pauseTimeFraction: r2(pauseTimeFraction),
-
-    // pre-sentence
-    preSentPauseCount: preSentPauses.length, meanPreSentPause: r(meanPreSent), medPreSentPause: r(medPreSent),
-
-    // bursts
-    nBursts, meanBurstLen: r2(meanBurst), medBurstLen: r2(medBurst), maxBurstLen: maxBurst, sdBurstLen: r2(sdBurst),
-
-    // revision
-    backspaceRate: r2(backspaceRate), deleteRate: r2(deleteRate), revisionRate: r2(revisionRate), navRate: r2(navRate),
-
-    // hold time
-    meanHoldMs: r(meanHold), medHoldMs: r(medHold), sdHoldMs: r(sdHold), nHoldSamples: holdTimes.length,
-
-    // digraph
-    meanAlphaAlphaIKI: r(meanAlphaAlphaIKI), nAlphaAlphaPairs: alphaToAlpha.length,
-
-    // rolling windows (kept third1/2/3 for compatibility with existing exports)
-    third1, third2, third3, rollingWindows,
-
-    // IKI buckets
-    ikiBuckets,
-
-    // session duration
-    sessionDurationMs: totalTime
+    // Primary
+    ikiCoV,
+    // Secondary
+    meanBurstLen, medBurstLen, nBursts:allBursts.length,
+    revisionRate,
+    // Exploratory
+    meanPreSentPause, preSentPauseCount:preSentPauses.length,
+    // Covariate
+    meanIKI, medianIKI, sdIKI,
+    // Rolling windows
+    rollingWindows,
+    // Counts
+    totalKeys, nBackspace, nDelete,
+    nAlpha:alphaDowns.length,
+    nSpace:downs.filter(e=>e.cat==='space').length,
+    // Quality flags
+    tabSwitches, pasteAttempts, undoEvents, fsExits, mouseRepos,
+    // Session
+    wordCount, sessionDurationMs,
+    sessionMeta:{
+      ...meta,
+      baselineWPM: meta.baselineWPM||null,
+      baselineAccuracy: meta.baselineMetrics?Math.round((meta.baselineMetrics.accuracy||0)*100):null,
+      baselineSkipped: meta.baselineSkipped||false,
+      endedEarly: meta.endedEarly||false,
+      sessionEndTime: sessionEndTime || null,
+    }
   };
 }
 
-function r(v) { return isNaN(v)||v===null||v===undefined ? null : Math.round(v); }
-function r2(v) { return isNaN(v)||v===null||v===undefined ? null : Math.round(v*100)/100; }
-function mean(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
-function median(arr) {
-  if (!arr.length) return 0;
-  const s = [...arr].sort((a,b)=>a-b);
-  const m = Math.floor(s.length/2);
-  return s.length%2 ? s[m] : (s[m-1]+s[m])/2;
-}
-function stddev(arr) {
-  if (arr.length < 2) return 0;
-  const m = mean(arr);
-  return Math.sqrt(arr.reduce((s,v)=>s+Math.pow(v-m,2),0)/(arr.length-1));
-}
-
 // ════════════════════════════════════════════
-//  RENDER RESULTS
+//  RESULTS RENDERING
 // ════════════════════════════════════════════
 function renderResults(f) {
-  document.getElementById('res-meta-pill').innerHTML = `
-    <span>Participant: <strong>${f.sessionMeta.participantId}</strong></span>
-    <span>Condition: <strong>${COND_LABELS[f.sessionMeta.condition]}</strong></span>
-    <span>Session: <strong>${f.sessionMeta.session}</strong></span>
-    <span>Baseline: <strong>${f.sessionMeta.baselineSkipped ? 'skipped' : `${f.sessionMeta.baselineWPM} WPM`}</strong></span>
-    <span>Words: <strong>${f.wordCount}</strong></span>
-    <span>Duration: <strong>${Math.round(f.sessionDurationMs/60000)} min</strong></span>
-  `;
+  const m=f.sessionMeta;
+  const pauseStats = getPauseStats();
+  const bucketData = buildIkiBucketData();
+  const temporalData = buildTemporalThirdData();
 
-  cells('rg-core', [
-    { l:'Mean IKI', v:`${f.meanIKI} ms`, s:'avg inter-keystroke interval' },
-    { l:'IKI Std Dev', v:`${f.sdIKI} ms`, s:'engagement rhythm spread' },
-    { l:'IKI CoV', v:f.cvIKI, s:'sd/mean — normalised variance' },
-    { l:'Pre-Sentence Pause', v:`${f.meanPreSentPause} ms`, s:`${f.preSentPauseCount} pauses measured` },
-    { l:'Mean Burst Length', v:f.meanBurstLen, s:`${f.nBursts} bursts total` },
-    { l:'Revision Rate', v:`${f.revisionRate}%`, s:'(backspace+delete)/total keys' },
-    { l:'Pause Freq /100', v:f.pauseFreqPer100, s:`${f.nPauses} pauses >1s` },
-    { l:'WPM', v:f.wpm, s:f.wpmVsBaseline !== null ? `${f.wpmVsBaseline>0?'+':''}${Math.round(f.wpmVsBaseline)}% vs baseline` : '' },
+  document.getElementById('res-meta-pill').innerHTML = [
+    `Participant: <strong>${m.participantId}</strong>`,
+    `Session: <strong>${m.session}</strong>`,
+    `Condition: <strong>${COND_LABELS[m.condition]}</strong>`,
+    `Prompt: <strong>${m.promptId}</strong>`,
+    `Duration: <strong>${m.durationMinutes} min</strong>`,
+    `Words: <strong>${f.wordCount}</strong>`,
+    `Baseline WPM: <strong>${m.baselineSkipped?'skipped':m.baselineWPM}</strong>`,
+  ].map(s=>`<span>${s}</span>`).join('');
+
+  renderKpiStrip('results-kpis', [
+    { label:'WPM', value:calcSessionWPM(f), sub:'session pace' },
+    { label:'Word count', value:f.wordCount, sub:'final output' },
+    { label:'Mean IKI', value:fmtMs(f.meanIKI), sub:'average latency' },
+    { label:'IKI CoV', value:fmtNum(f.ikiCoV), sub:'typing variability' },
+    { label:'Pauses >1s', value:pauseStats.count, sub:`mean ${fmtMs(pauseStats.mean).toLowerCase()}` },
+    { label:'Backspace rate', value:fmtPct(f.revisionRate), sub:`${f.nBackspace + f.nDelete} revision keys` },
   ]);
 
-  cells('rg-iki', [
-    { l:'Median IKI', v:`${f.medIKI} ms`, s:'' },
-    { l:'IKI Variance', v:f.varIKI, s:'sample variance' },
-    { l:'<100ms', v:f.ikiBuckets.sub100, s:'rapid key pairs' },
-    { l:'100–300ms', v:f.ikiBuckets.i100_300, s:'fluent typing zone' },
-    { l:'300ms–1s', v:f.ikiBuckets.i300_1000, s:'slight hesitation' },
-    { l:'1s–3s', v:f.ikiBuckets.i1000_3000, s:'notable pause' },
-    { l:'>3s', v:f.ikiBuckets.over3000, s:'long pause' },
-    { l:'Letter-Transition IKI', v:`${f.meanAlphaAlphaIKI} ms`, s:`${f.nAlphaAlphaPairs} transitions` },
+  const graphHost = document.getElementById('results-graphs');
+  graphHost.innerHTML = [
+    renderBarChartCard({
+      title: 'Session overview',
+      subtitle: 'One-session summary of output, flow, and revision behavior',
+      labels: ['WPM', 'Word count', 'Bursts', 'Revision keys', 'Tab switches'],
+      series: [
+        { name: 'Session', color: '#2d7ff9', values: [calcSessionWPM(f), f.wordCount, f.nBursts, f.nBackspace + f.nDelete, f.tabSwitches] }
+      ],
+      format: v => `${fmtNum(v)}`,
+      note: 'This chart summarizes the final writing session only. No baseline comparison is shown.'
+    }),
+    renderBarChartCard({
+      title: 'Inter-key interval (IKI) — ms',
+      subtitle: 'Core latency and variability metrics from the writing session',
+      labels: ['Mean IKI', 'Median IKI', 'SD IKI', 'CoV × 100'],
+      series: [
+        { name: 'Latency', color: '#2d7ff9', values: [f.meanIKI || 0, f.medianIKI || 0, f.sdIKI || 0, f.ikiCoV !== null && f.ikiCoV !== undefined ? round2(f.ikiCoV * 100) : 0] }
+      ],
+      format: (v, idx) => idx === 3 ? `${fmtNum(v)}` : `${fmtNum(v)} ms`,
+      note: 'Coefficient of variation (CoV × 100) shows how steady or uneven the typing rhythm was.'
+    }),
+    renderBarChartCard({
+      title: 'Pause behaviour',
+      subtitle: 'Thinking pauses detected from longer gaps between key presses',
+      labels: ['Pause count', 'Mean pause', 'Max pause', 'Pre-sentence pause'],
+      series: [
+        { name: 'Pauses', color: '#f47c20', values: [pauseStats.count, pauseStats.mean, pauseStats.max, f.meanPreSentPause || 0] }
+      ],
+      format: (v, idx) => idx === 0 ? `${fmtNum(v)}` : `${fmtNum(v)} ms`,
+      note: 'Pauses use the >1 second threshold already defined in your capture logic.'
+    }),
+    renderBarChartCard({
+      title: 'IKI distribution — key count by interval bucket',
+      subtitle: 'How the session spread across fast, moderate, and long delays',
+      labels: ['<100ms', '100–300ms', '300ms–1s', '1–3s', '>3s'],
+      series: [
+        { name: 'Fast to moderate', color: '#2d7ff9', values: [bucketData[0], bucketData[1], bucketData[2], 0, 0] },
+        { name: 'Long delays', color: '#f47c20', values: [0, 0, 0, bucketData[3], bucketData[4]] }
+      ],
+      format: v => `${fmtNum(v)} keys`,
+      note: 'Blue highlights routine typing intervals. Orange highlights longer pauses and stalls.'
+    }),
+    renderLineChartCard({
+      title: 'Temporal IKI — mean IKI per third of session (ms)',
+      labels: ['Third 1', 'Third 2', 'Third 3'],
+      series: [
+        { name: 'Session trend', color: '#2d7ff9', values: temporalData }
+      ],
+      format: v => `${fmtNum(v)} ms`,
+      note: 'Useful for spotting early struggle, mid-session flow, or late slowdown.'
+    })
+  ].join('');
+  const tbody=document.getElementById('rw-body');
+  tbody.innerHTML=f.rollingWindows.map(w=>`
+    <tr>
+      <td><strong>${w.label}</strong></td>
+      <td>${w.keyCount}</td>
+      <td class="val">${w.meanIKI===null?'—':`${w.meanIKI} ms`}</td>
+      <td class="val">${w.ikiCoV??'—'}</td>
+      <td>${w.burstCount}</td>
+      <td>${w.backspaceCount}</td>
+    </tr>`).join('');
+
+  const pt=meta.postTask||{};
+  renderSurveyMiniGrid('rg-posttask', [
+    { label:'Topic familiarity', value:pt.familiarity??'—', sub:'1 to 5' },
+    { label:'Effort', value:pt.effort??'—', sub:'1 to 5' },
+    { label:'Tool usage', value:pt.tool_usage??'N/A', sub:'' },
+    { label:'% own words', value:pt.pct_own_words??'N/A', sub:'LLM only' },
+    { label:'Interrupted', value:pt.interruption??'—', sub:pt.interruption_detail||'' },
   ]);
 
-  cells('rg-burst', [
-    { l:'Burst Count', v:f.nBursts, s:'' },
-    { l:'Mean Burst Len', v:f.meanBurstLen, s:'keystrokes' },
-    { l:'Median Burst Len', v:f.medBurstLen, s:'' },
-    { l:'Max Burst Len', v:f.maxBurstLen, s:'longest continuous run' },
-    { l:'Burst SD', v:f.sdBurstLen, s:'burst length variability' },
-  ]);
+  const flags=[
+    { k:'Tab Switches', v:f.tabSwitches, alert:meta.condition==='brain'&&f.tabSwitches>0 },
+    { k:'Paste Blocked', v:f.pasteAttempts, alert:f.pasteAttempts>0 },
+    { k:'Undo Blocked', v:f.undoEvents, alert:f.undoEvents>0 },
+    { k:'Fullscreen Exits', v:f.fsExits, alert:f.fsExits>0 },
+    { k:'Mouse Repos', v:f.mouseRepos, alert:false },
+  ];
+  document.getElementById('rg-flags').innerHTML=flags.map(f=>`
+    <div class="flag-cell"><div class="k">${f.k}</div><div class="v ${f.alert?'alert':''}">${f.v}</div></div>`).join('');
 
-  cells('rg-revision', [
-    { l:'Backspace Rate', v:`${f.backspaceRate}%`, s:`${f.nBackspace} total` },
-    { l:'Delete Rate', v:`${f.deleteRate}%`, s:`${f.nDelete} total` },
-    { l:'Nav Key Rate', v:`${f.navRate}%`, s:'arrows+nav keys' },
-    { l:'Total Pauses', v:f.nPauses, s:'>1s threshold' },
-    { l:'Mean Pause', v:`${f.meanPause} ms`, s:'thinking pause duration' },
-    { l:'Max Pause', v:`${f.maxPause} ms`, s:'' },
-    { l:'Pause Time %', v:`${Math.round(f.pauseTimeFraction*100)}%`, s:'of total session' },
-    { l:'Tab Switches', v:f.tabSwitches, s:'tab hidden events' },
-  ]);
+  document.getElementById('raw-out').textContent=
+    JSON.stringify(events.slice(0,100),null,2)+`
 
-  cells('rg-thirds', (f.rollingWindows || []).flatMap(w => [
-    { l:`${w.label} Mean IKI`, v:`${w.meanIKI} ms`, s:`keys ${w.startKey}–${w.endKey} · ${w.keyCount} keys` },
-    { l:`${w.label} Pauses`, v:w.pauseCount, s:`70-key window` },
-    { l:`${w.label} Backspaces`, v:w.backspaceCount, s:'' },
-  ]));
+... (${events.length} total events)`;
 
-  cells('rg-hold', [
-    { l:'Mean Hold Time', v:`${f.meanHoldMs} ms`, s:'alpha keys' },
-    { l:'Median Hold Time', v:`${f.medHoldMs} ms`, s:'' },
-    { l:'Hold SD', v:`${f.sdHoldMs} ms`, s:'' },
-    { l:'Hold Samples', v:f.nHoldSamples, s:'valid keyup events' },
-  ]);
-
-  cells('rg-digraph', [
-    { l:'Letter→Letter IKI', v:`${f.meanAlphaAlphaIKI} ms`, s:'content-safe letter-transition proxy' },
-    { l:'Transitions Sampled', v:f.nAlphaAlphaPairs, s:'' },
-  ]);
-
-  cells('rg-meta', [
-    { l:'Keyboard', v:f.sessionMeta.keyboardType, s:'' },
-    { l:'Language', v:f.sessionMeta.primaryLanguage, s:'' },
-    { l:'Baseline WPM', v:(f.sessionMeta.baselineSkipped ? 'skipped' : f.sessionMeta.baselineWPM), s:'typing speed covariate' },
-    { l:'Baseline Accuracy', v:(f.sessionMeta.baselineMetrics ? `${Math.round((f.sessionMeta.baselineMetrics.accuracy || 0) * 100)}%` : '—'), s:'baseline validity check' },
-    { l:'Total Keys', v:f.totalKeys, s:'' },
-    { l:'Alpha Keys', v:f.nAlpha, s:'' },
-    { l:'Space Keys', v:f.nSpace, s:'' },
-    { l:'Sentence Ends', v:f.nSentEnd, s:'. ? !' },
-    { l:'Collected At', v:new Date(f.sessionMeta.collectedAt).toLocaleTimeString(), s:'' },
-  ]);
-
-  document.getElementById('raw-out').textContent =
-    JSON.stringify(events.slice(0,100), null, 2) + `\n\n... (${events.length} total events)`;
-
-  // store for export
-  window._lastFeatures = f;
+  window._lastFeatures=f;
 }
 
-function cells(id, data) {
-  document.getElementById(id).innerHTML = data.map(c => `
-    <div class="res-cell">
-      <div class="res-lbl">${c.l}</div>
-      <div class="res-val">${c.v ?? '—'}</div>
-      ${c.s ? `<div class="res-sub">${c.s}</div>` : ''}
-    </div>
-  `).join('');
+function renderKpiStrip(id, items) {
+  document.getElementById(id).innerHTML = items.map(item => `
+    <div class="kpi-tile">
+      <div class="k">${item.label}</div>
+      <div class="v">${item.value}</div>
+      <div class="s">${item.sub||''}</div>
+    </div>`).join('');
+}
+
+function renderSurveyMiniGrid(id, items) {
+  document.getElementById(id).innerHTML = items.map(item => `
+    <div class="survey-mini">
+      <div class="k">${item.label}</div>
+      <div class="v">${item.value}</div>
+      <div class="s">${item.sub||''}</div>
+    </div>`).join('');
+}
+
+function fmtNum(v) {
+  if (v===null || v===undefined || Number.isNaN(v)) return '—';
+  return Number.isInteger(v) ? String(v) : String(round2(v));
+}
+
+function fmtMs(v) {
+  const out = fmtNum(v);
+  return out === '—' ? out : `${out} ms`;
+}
+
+function fmtPct(v) {
+  const out = fmtNum(v);
+  return out === '—' ? out : `${out}%`;
+}
+
+function calcSessionWPM(f) {
+  if (!f || !f.sessionDurationMs) return 0;
+  const minutes = f.sessionDurationMs / 60000;
+  if (!minutes) return 0;
+  return Math.round((f.wordCount || 0) / minutes);
+}
+
+function getPauseStats() {
+  const pauses = events
+    .filter(e => e.type === 'D' && isValidIki(e.iki) && e.iki > PAUSE_THRESHOLD_MS)
+    .map(e => e.iki);
+  return {
+    count: pauses.length,
+    mean: pauses.length ? Math.round(mean(pauses)) : 0,
+    max: pauses.length ? Math.max(...pauses) : 0
+  };
+}
+
+function buildIkiBucketData() {
+  const downs = events.filter(e=>e.type==='D');
+  const counts = [0,0,0,0,0];
+  downs.forEach(e => {
+    const v = e.iki;
+    if (!isValidIki(v)) return;
+    if (v < 100) counts[0]++;
+    else if (v < 300) counts[1]++;
+    else if (v < 1000) counts[2]++;
+    else if (v < 3000) counts[3]++;
+    else counts[4]++;
+  });
+  return counts;
+}
+
+function buildTemporalThirdData() {
+  const downs = events.filter(e=>e.type==='D');
+  return splitSeriesIntoThirds(downs.map(e=>e.iki).filter(isValidIki));
+}
+
+function splitSeriesIntoThirds(values) {
+  if (!values.length) return [null,null,null];
+  const size = Math.ceil(values.length / 3);
+  return [0,1,2].map(i => {
+    const slice = values.slice(i * size, (i + 1) * size);
+    return slice.length ? Math.round(mean(slice)) : null;
+  });
+}
+
+function renderBarChartCard({title, subtitle='', labels=[], series=[], format=(v)=>String(v), note=''}) {
+  const width = 760, height = 300, top = 20, right = 18, bottom = 58, left = 58;
+  const plotW = width - left - right;
+  const plotH = height - top - bottom;
+  const allValues = series.flatMap(s => s.values || []);
+  const maxVal = Math.max(1, ...allValues, 0);
+  const ticks = 5;
+  const groupWidth = plotW / Math.max(1, labels.length);
+  const barWidth = Math.min(58, (groupWidth * 0.72) / Math.max(1, series.length));
+  const legend = renderLegend(series);
+  const yTicks = Array.from({length:ticks+1}, (_, i) => {
+    const value = maxVal * (ticks - i) / ticks;
+    const y = top + (plotH * i / ticks);
+    return `<line x1="${left}" y1="${y}" x2="${width-right}" y2="${y}" stroke="#e8e5de" stroke-width="1"/>
+            <text x="${left-10}" y="${y+4}" fill="#7a7770" font-size="10" text-anchor="end" font-family="IBM Plex Mono">${fmtNum(value)}</text>`;
+  }).join('');
+  const xLabels = labels.map((label, idx) => {
+    const x = left + groupWidth * idx + groupWidth / 2;
+    return `<text x="${x}" y="${height-22}" fill="#7a7770" font-size="11" text-anchor="middle" font-family="IBM Plex Sans">${escapeHtml(label)}</text>`;
+  }).join('');
+  const bars = series.map((s, sIdx) => (s.values || []).map((v, idx) => {
+    const normalized = maxVal ? v / maxVal : 0;
+    const bh = plotH * normalized;
+    const x = left + groupWidth * idx + ((groupWidth - (barWidth * series.length)) / 2) + (sIdx * barWidth);
+    const y = top + plotH - bh;
+    return `<g>
+      <rect x="${x}" y="${y}" width="${barWidth-6}" height="${Math.max(2,bh)}" rx="2" fill="${s.color}" opacity="0.92"></rect>
+      <text x="${x + (barWidth-6)/2}" y="${y-8}" fill="${s.color}" font-size="10" text-anchor="middle" font-family="IBM Plex Mono">${escapeHtml(format(v, idx))}</text>
+    </g>`;
+  }).join('')).join('');
+  return `
+    <div class="chart-card">
+      <div class="chart-title">${title}</div>
+      ${subtitle ? `<div class="chart-subtitle">${subtitle}</div>` : ''}
+      ${legend}
+      <div class="chart-wrap">
+        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(title)}">
+          ${yTicks}
+          <line x1="${left}" y1="${top+plotH}" x2="${width-right}" y2="${top+plotH}" stroke="#d8d5ce" stroke-width="1.2"/>
+          ${bars}
+          ${xLabels}
+        </svg>
+      </div>
+      ${note ? `<div class="chart-note">${note}</div>` : ''}
+    </div>`;
+}
+
+function renderLineChartCard({title, labels=[], series=[], format=(v)=>String(v), note=''}) {
+  const width = 760, height = 260, top = 22, right = 18, bottom = 50, left = 56;
+  const plotW = width - left - right;
+  const plotH = height - top - bottom;
+  const allValues = series.flatMap(s => (s.values || []).filter(v => v!==null && v!==undefined && !Number.isNaN(v)));
+  const maxVal = allValues.length ? Math.max(...allValues) : 1;
+  const minVal = allValues.length ? Math.min(...allValues) : 0;
+  const range = Math.max(1, maxVal - minVal);
+  const ticks = 4;
+  const legend = renderLegend(series);
+  const grid = Array.from({length:ticks+1}, (_, i) => {
+    const value = maxVal - ((maxVal - minVal) * i / ticks);
+    const y = top + (plotH * i / ticks);
+    return `<line x1="${left}" y1="${y}" x2="${width-right}" y2="${y}" stroke="#e8e5de" stroke-width="1"/>
+            <text x="${left-10}" y="${y+4}" fill="#7a7770" font-size="10" text-anchor="end" font-family="IBM Plex Mono">${fmtNum(value)}</text>`;
+  }).join('');
+  const xPos = idx => left + (plotW * idx / Math.max(1, labels.length - 1));
+  const yPos = v => top + plotH - (((v - minVal) / range) * plotH);
+  const xLabels = labels.map((label, idx) => `<text x="${xPos(idx)}" y="${height-18}" fill="#7a7770" font-size="11" text-anchor="middle" font-family="IBM Plex Sans">${escapeHtml(label)}</text>`).join('');
+  const paths = series.map(s => {
+    const values = s.values || [];
+    let d = '';
+    let openSegment = false;
+    values.forEach((v, idx) => {
+      if (v===null || v===undefined || Number.isNaN(v)) {
+        openSegment = false;
+        return;
+      }
+      const pt = `${xPos(idx)},${yPos(v)}`;
+      d += `${openSegment ? ' L ' : 'M '}${pt}`;
+      openSegment = true;
+    });
+    const nodes = values.map((v, idx) => {
+      if (v===null || v===undefined || Number.isNaN(v)) {
+        return `<g>
+          <text x="${xPos(idx)}" y="${top + plotH - 10}" fill="#7a7770" font-size="10" text-anchor="middle" font-family="IBM Plex Mono">—</text>
+        </g>`;
+      }
+      return `<g>
+        <circle cx="${xPos(idx)}" cy="${yPos(v)}" r="4.2" fill="${s.color}"></circle>
+        <text x="${xPos(idx)}" y="${yPos(v)-10}" fill="${s.color}" font-size="10" text-anchor="middle" font-family="IBM Plex Mono">${escapeHtml(format(v, idx))}</text>
+      </g>`;
+    }).join('');
+    const pathMarkup = d ? `<path d="${d.trim()}" fill="none" stroke="${s.color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>` : '';
+    return `${pathMarkup}${nodes}`;
+  }).join('');
+  return `
+    <div class="chart-card">
+      <div class="chart-title">${title}</div>
+      ${legend}
+      <div class="chart-wrap">
+        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(title)}">
+          ${grid}
+          <line x1="${left}" y1="${top+plotH}" x2="${width-right}" y2="${top+plotH}" stroke="#d8d5ce" stroke-width="1.2"/>
+          ${paths}
+          ${xLabels}
+        </svg>
+      </div>
+      ${note ? `<div class="chart-note">${note}</div>` : ''}
+    </div>`;
+}
+
+function renderLegend(series) {
+  return `<div class="chart-legend">${series.map(s => `<span class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span>${escapeHtml(s.name)}</span>`).join('')}</div>`;
+}
+
+function escapeHtml(v) {
+  return String(v)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function featureCards(id, data) {
+  document.getElementById(id).innerHTML=data.map(c=>`
+    <div class="feature-card ${c.role}">
+      <div class="fc-role ${c.role}">${c.role}</div>
+      <div class="fc-label">${c.label}</div>
+      <div class="fc-val">${c.val??'—'}</div>
+      ${c.sub?`<div class="fc-sub">${c.sub}</div>`:''}
+    </div>`).join('');
 }
 
 // ════════════════════════════════════════════
 //  EXPORT
 // ════════════════════════════════════════════
 function exportCSV() {
-  const f = window._lastFeatures;
-  const downs = events.filter(e=>e.type==='D');
-  const hdr = 'event_index,elapsed_ms,key_category,iki_ms,iki_raw_ms,pause_flag,burst_position,cumulative_keys';
-  const rows = downs.map((e,i)=>[
-    i, e.t, e.cat, e.iki??'', e.rawIki??'', e.pauseFlag??0, e.burstPos??'', e.cumKeys??''
-  ].join(','));
-  const fname = `cogtype_${f.sessionMeta.participantId}_S${f.sessionMeta.session}_${f.sessionMeta.condition}`;
-  dl([hdr,...rows].join('\n'), fname+'.csv', 'text/csv');
+  const f=window._lastFeatures;
+  const m=f.sessionMeta;
+  const pt=m.postTask||{};
+  const w=f.rollingWindows;
+  const headers=[
+    'participant_id','session','condition','prompt_id','keyboard_type','primary_language','collected_at',
+    'baseline_wpm','baseline_accuracy','baseline_skipped',
+    'iki_cov','mean_burst_len','revision_rate','pre_sent_pause_ms','pre_sent_pause_n','mean_iki','sd_iki',
+    'q1_iki_cov','q1_mean_iki','q2_iki_cov','q2_mean_iki','q3_iki_cov','q3_mean_iki','q4_iki_cov','q4_mean_iki',
+    'topic_familiarity','effort_rating','tool_usage_freq','pct_own_words','interruption','interruption_detail',
+    'total_keys','n_alpha','n_backspace','n_delete','n_space','n_bursts','word_count','session_duration_ms','ended_early',
+    'tab_switches','paste_attempts','undo_events','fs_exits','mouse_repos',
+    'consent_version'
+  ];
+  const vals=[
+    m.participantId, m.session, m.condition, m.promptId, m.keyboardType, m.primaryLanguage, m.collectedAt,
+    m.baselineWPM??'', m.baselineAccuracy??'', m.baselineSkipped?1:0,
+    f.ikiCoV??'', f.meanBurstLen??'', f.revisionRate??'', f.meanPreSentPause??'', f.preSentPauseCount, f.meanIKI, f.sdIKI,
+    w[0]?.ikiCoV??'', w[0]?.meanIKI??'', w[1]?.ikiCoV??'', w[1]?.meanIKI??'',
+    w[2]?.ikiCoV??'', w[2]?.meanIKI??'', w[3]?.ikiCoV??'', w[3]?.meanIKI??'',
+    pt.familiarity??'', pt.effort??'', pt.tool_usage??'', pt.pct_own_words??'', pt.interruption??'', (pt.interruption_detail||'').replace(/,/g,' '),
+    f.totalKeys, f.nAlpha, f.nBackspace, f.nDelete, f.nSpace, f.nBursts, f.wordCount, f.sessionDurationMs, m.endedEarly?1:0,
+    f.tabSwitches, f.pasteAttempts, f.undoEvents, f.fsExits, f.mouseRepos,
+    m.consentVersion||''
+  ];
+  const fname=`cogtype_${m.participantId}_S${m.session}_${m.condition}`;
+  dl([headers.join(','), vals.join(',')].join('\n'), fname+'.csv', 'text/csv');
 }
 
 function exportJSON() {
-  const f = window._lastFeatures;
-  const out = { meta: f.sessionMeta, features: f, events };
-  const fname = `cogtype_${f.sessionMeta.participantId}_S${f.sessionMeta.session}_${f.sessionMeta.condition}`;
-  dl(JSON.stringify(out, null, 2), fname+'.json', 'application/json');
+  const f=window._lastFeatures;
+  const m=f.sessionMeta;
+  const out={ meta:m, features:f, events };
+  const fname=`cogtype_${m.participantId}_S${m.session}_${m.condition}`;
+  dl(JSON.stringify(out,null,2), fname+'.json','application/json');
 }
 
-function dl(content, name, type) {
-  const blobUrl = URL.createObjectURL(new Blob([content], { type }));
-  const a = document.createElement('a');
-  a.href = blobUrl;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+function dl(content,name,type) {
+  const url=URL.createObjectURL(new Blob([content],{type}));
+  const a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 function toggleRaw() {
-  const el = document.getElementById('raw-out');
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  const el=document.getElementById('raw-out');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+// ════════════════════════════════════════════
+//  SESSION RECOVERY
+// ════════════════════════════════════════════
+function saveDraftSnapshot() {
+  if (!isWriting||!sessionStart||hasEnded) return;
+  try {
+    sessionStorage.setItem('cogtype_recovery',JSON.stringify({
+      meta,baselineWPM,sessionStart,sessionEndTime,lastKeyDownTime,
+      cntKeys,cntBackspace,cntPause,cntBursts,
+      activeBurstLen,burstLengths,pressSeq,events,
+      essayText:document.getElementById('essay-area').value,
+      savedAt:new Date().toISOString()
+    }));
+  } catch(e) {}
+}
+
+function restoreDraftIfAvailable() {
+  try {
+    const raw=sessionStorage.getItem('cogtype_recovery');
+    if (!raw) return;
+    const snap=JSON.parse(raw);
+    if (!snap?.meta?.participantId||!snap.essayText) return;
+    const area=document.getElementById('setup-recovery-area');
+    if (!area) return;
+    const msg=document.createElement('div');
+    msg.className='info-box warn';
+    msg.innerHTML=`<strong>Recovery available.</strong> Unfinished session for <strong>${snap.meta.participantId}</strong> from ${new Date(snap.savedAt).toLocaleString()}.`;
+    area.appendChild(msg);
+    const btn=document.createElement('button');
+    btn.className='btn ghost'; btn.textContent='Restore session';
+    btn.onclick=()=>restoreFromSnapshot(snap);
+    area.appendChild(btn);
+  } catch(e) { sessionStorage.removeItem('cogtype_recovery'); }
+}
+
+function restoreFromSnapshot(snap) {
+  meta=snap.meta||{}; baselineWPM=snap.baselineWPM||0;
+  events=Array.isArray(snap.events)?snap.events:[];
+  sessionStart=snap.sessionStart||Date.now();
+  sessionEndTime=snap.sessionEndTime||null;
+  lastKeyDownTime=null; // Reset to avoid bad IKI on first keystroke
+  cntKeys=snap.cntKeys||0; cntBackspace=snap.cntBackspace||0;
+  cntPause=snap.cntPause||0; cntBursts=snap.cntBursts||0;
+  activeBurstLen=snap.activeBurstLen||0;
+  burstLengths=Array.isArray(snap.burstLengths)?snap.burstLengths:[];
+  pressSeq=snap.pressSeq||0; keyDownMap=new Map();
+  hasEnded=false; isWriting=true;
+  document.getElementById('write-prompt-text').textContent=PROMPTS[meta.promptIndex].text;
+  document.getElementById('write-pid-lbl').textContent=`${meta.participantId} · S${meta.session}`;
+  const badge=document.getElementById('cond-badge');
+  badge.className=`badge ${meta.condition}`; badge.textContent=COND_LABELS[meta.condition];
+  const area=document.getElementById('essay-area');
+  area.value=snap.essayText||''; area.disabled=false;
+  updateLiveCounters(); updateLive();
+  setStatus('warn','restored');
+  goTo('screen-write');
+  const elapsed=Math.max(0,Math.floor((Date.now()-sessionStart)/1000));
+  const remaining=Math.max(0,(meta.durationMinutes*60)-elapsed);
+  startCountdown(remaining);
+  if(liveInt) clearInterval(liveInt);
+  liveInt=setInterval(updateLive,1500);
+  if(autoSaveInt) clearInterval(autoSaveInt);
+  autoSaveInt=setInterval(saveDraftSnapshot,2000);
+  attachWritingListeners();
+  area.focus();
 }
 
 function newSession() {
-  clearInterval(timerInt);
-  clearInterval(liveInt);
-  clearInterval(autoSaveInt);
-  isWriting = false;
-  hasEnded = false;
+  clearInterval(timerInt); clearInterval(liveInt); clearInterval(autoSaveInt);
+  isWriting=false; hasEnded=false; writingListenersBound=false;
   sessionStorage.removeItem('cogtype_recovery');
-  keyDownMap = new Map();
-  events = [];
-  burstLengths = [];
-  lastKeyDownTime = null;
-  document.getElementById('essay-area').value = '';
+  keyDownMap=new Map(); events=[]; burstLengths=[];
+  sessionStart=null; sessionEndTime=null;
+  lastKeyDownTime=null; postTaskAnswers={};
+  document.getElementById('essay-area').value='';
+  document.getElementById('essay-area').disabled=false;
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  document.getElementById('fs-warning').classList.remove('show');
   goTo('screen-setup');
-  setStatus('', 'idle');
-}
-
-function setStatus(cls, txt) {
-  document.getElementById('status-dot').className = 'dot ' + cls;
-  document.getElementById('status-txt').textContent = txt;
+  setStatus('','idle');
 }
 
 // ════════════════════════════════════════════
-//  SKIP PASSCODE
+//  CONSENT
 // ════════════════════════════════════════════
-const SKIP_PASSCODE = 'cogtype2025'; // convenience gate only; not true security on a static site
+const CONSENT_CONFIG = {
+  studyTitle:'Cognitive Effects of Writing Assistance Tools on Keystroke Dynamics',
+  researcherName:'Ethan Lo', researcherEmail:'128ethanl@gmail.com',
+  irbName:'Prototype only', irbContact:'none',
+  purpose:'This study examines whether keystroke dynamics features — specifically IKI coefficient of variation, burst length, and revision rate — differ systematically across three writing conditions: brain-only, search-assisted, and LLM-assisted essay writing.',
+  duration:'Approximately 20–25 minutes including baseline typing.',
+  procedures:[
+    'You will complete a short baseline typing test to calibrate your natural typing speed.',
+    'You will then write a timed argumentative essay under one assigned writing condition.',
+    'The app records keystroke timing only — it does not read the content of your keystrokes.',
+    'After writing, you will complete a brief post-task survey.',
+    'You will download the session files and provide them to the researcher.'
+  ],
+  risks:['Possible mild fatigue or discomfort from timed writing.','Privacy risk if data were mishandled, though the app records timing metadata only.'],
+  benefits:['You may not receive direct personal benefit.','Your participation helps understand how writing tools affect cognitive engagement.'],
+  compensation:'5 cents and a piece of gum',
+  confidentiality:'The study stores participant ID and timing metadata locally in your browser until you download the session files. Do not enter your real name as a participant ID.',
+  voluntary:'Participation is voluntary. You may stop at any time without penalty.',
+  withdrawal:'If you withdraw before exporting, inform the researcher immediately.',
+  termsOfService:[
+    'This app is for supervised research use only.',
+    'Do not paste text, use macros, or otherwise automate the typing task.',
+    'Export session files only to the researcher or approved study workflow.',
+    'Report any technical interruptions to the researcher before exporting.'
+  ]
+};
 
+function renderConsentModal() {
+  document.getElementById('consent-body').innerHTML=`
+    <div class="info-box warn"><strong>Note:</strong> This consent form is a prototype aligned to common IRB elements. You still need formal IRB/ethics approval before running participants.</div>
+    <p><strong>Study:</strong> ${CONSENT_CONFIG.studyTitle}</p>
+    <p><strong>Researcher:</strong> ${CONSENT_CONFIG.researcherName} · ${CONSENT_CONFIG.researcherEmail}</p>
+    <hr>
+    <p><strong>Purpose.</strong> ${CONSENT_CONFIG.purpose}</p>
+    <p><strong>What you will do.</strong></p><ul>${CONSENT_CONFIG.procedures.map(x=>`<li>${x}</li>`).join('')}</ul>
+    <p><strong>Time required.</strong> ${CONSENT_CONFIG.duration}</p>
+    <p><strong>Risks.</strong></p><ul>${CONSENT_CONFIG.risks.map(x=>`<li>${x}</li>`).join('')}</ul>
+    <p><strong>Benefits.</strong></p><ul>${CONSENT_CONFIG.benefits.map(x=>`<li>${x}</li>`).join('')}</ul>
+    <p><strong>Compensation.</strong> ${CONSENT_CONFIG.compensation}</p>
+    <p><strong>Confidentiality.</strong> ${CONSENT_CONFIG.confidentiality}</p>
+    <p><strong>Voluntary participation.</strong> ${CONSENT_CONFIG.voluntary}</p>
+    <p><strong>Withdrawal.</strong> ${CONSENT_CONFIG.withdrawal}</p>
+    <p><strong>Terms of use.</strong></p><ul>${CONSENT_CONFIG.termsOfService.map(x=>`<li>${x}</li>`).join('')}</ul>
+    <div class="consent-check">
+      <input id="consent-checkbox" type="checkbox" onchange="updateConsentBtn()">
+      <label for="consent-checkbox" style="margin:0;font-size:13px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--text);">
+        I have read the information above, had the opportunity to ask questions, and voluntarily agree to participate. I confirm I am authorized to consent under the approved protocol.
+      </label>
+    </div>
+    <p class="subtle" style="margin-top:10px;font-size:11px;">Consent version: ${CONSENT_VERSION}</p>`;
+}
+
+function updateConsentBtn() {
+  const checked=document.getElementById('consent-checkbox')?.checked;
+  document.getElementById('consent-agree-btn').disabled=!checked;
+  document.getElementById('consent-error').textContent=checked?'Consent selected.':'You must review and agree before continuing.';
+}
+
+function hasStoredConsent() { try{return!!sessionStorage.getItem(CONSENT_KEY);}catch(e){return false;} }
+
+function enforceConsentGate() {
+  if(hasStoredConsent()) return;
+  const m=document.getElementById('consent-modal');
+  m.classList.add('show'); m.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  setStatus('warn','consent required');
+}
+
+function acceptConsent() {
+  const p={acceptedAt:new Date().toISOString(),consentVersion:CONSENT_VERSION};
+  sessionStorage.setItem(CONSENT_KEY,JSON.stringify(p));
+  meta.consentAcceptedAt=p.acceptedAt; meta.consentVersion=p.consentVersion;
+  closeConsentModal(); setStatus('','idle');
+}
+
+function declineConsent() {
+  alert('Consent was not provided. The app will remain blocked until the page is closed.');
+}
+
+function closeConsentModal() {
+  const m=document.getElementById('consent-modal');
+  m.classList.remove('show'); m.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+
+function attachConsentToMeta() {
+  try {
+    const raw=sessionStorage.getItem(CONSENT_KEY);
+    if(!raw) return;
+    const p=JSON.parse(raw);
+    meta.consentAcceptedAt=p.acceptedAt||null;
+    meta.consentVersion=p.consentVersion||CONSENT_VERSION;
+  } catch(e) {}
+}
+
+// ════════════════════════════════════════════
+//  SKIP MODAL
+// ════════════════════════════════════════════
 function openSkipModal() {
-  document.getElementById('skip-passcode-input').value = '';
-  document.getElementById('skip-error').textContent = '';
-  const modal = document.getElementById('skip-modal');
-  modal.style.display = 'flex';
-  setTimeout(() => document.getElementById('skip-passcode-input').focus(), 50);
+  document.getElementById('skip-passcode-input').value='';
+  document.getElementById('skip-error').textContent='';
+  document.getElementById('skip-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('skip-passcode-input').focus(),50);
 }
 
-function closeSkipModal() {
-  document.getElementById('skip-modal').style.display = 'none';
-}
+function closeSkipModal() { document.getElementById('skip-modal').style.display='none'; }
 
 function attemptSkip() {
-  const val = document.getElementById('skip-passcode-input').value;
-  if (val === SKIP_PASSCODE) {
+  if (document.getElementById('skip-passcode-input').value===SKIP_PASSCODE) {
     closeSkipModal();
-    meta.baselineWPM = null;
-    meta.baselineSkipped = true;
-    // fill instructions screen as if baseline passed
-    document.getElementById('i-pid').textContent = meta.participantId;
-    document.getElementById('i-cond').textContent = COND_LABELS[meta.condition];
-    document.getElementById('i-wpm').textContent = 'skipped';
-    document.getElementById('i-dur').textContent = meta.durationMinutes;
-    const instrMap = {
-      brain: `<div class="info-box"><strong>Brain-Only condition.</strong> Write your essay using only your own knowledge and memory. Do not open any other browser tabs. Do not use a search engine. Do not use any AI tool.</div>`,
-      search: `<div class="info-box"><strong>Search Engine condition.</strong> You may use a search engine (Google, Bing, etc.) to look up information. Do not use any AI tools.</div>`,
-      llm: `<div class="info-box"><strong>LLM-Assisted condition.</strong> You may use any AI language model however you like. There are no restrictions. Work naturally.</div>`
-    };
-    document.getElementById('cond-instructions').innerHTML = instrMap[meta.condition];
+    meta.baselineWPM=null; meta.baselineSkipped=true;
+    document.getElementById('i-pid').textContent=meta.participantId;
+    document.getElementById('i-cond').textContent=COND_LABELS[meta.condition];
+    document.getElementById('i-wpm').textContent='skipped';
+    document.getElementById('i-dur').textContent=meta.durationMinutes;
+    document.getElementById('cond-instructions').innerHTML=`<div class="info-box warn"><strong>Baseline skipped.</strong> Researcher override applied.</div>`;
     goTo('screen-instructions');
   } else {
-    document.getElementById('skip-error').textContent = 'Incorrect passcode.';
-    document.getElementById('skip-passcode-input').value = '';
+    document.getElementById('skip-error').textContent='Incorrect passcode.';
+    document.getElementById('skip-passcode-input').value='';
     document.getElementById('skip-passcode-input').focus();
   }
 }
 
-// close modal on backdrop click
-document.addEventListener('click', e => {
-  const modal = document.getElementById('skip-modal');
-  if (e.target === modal) closeSkipModal();
+document.addEventListener('click', e=>{
+  if (e.target===document.getElementById('skip-modal')) closeSkipModal();
+});
+
+// ════════════════════════════════════════════
+//  STATUS
+// ════════════════════════════════════════════
+function setStatus(cls,txt) {
+  document.getElementById('status-dot').className='dot '+cls;
+  document.getElementById('status-txt').textContent=txt;
+}
+
+// ════════════════════════════════════════════
+//  MATH UTILITIES
+// ════════════════════════════════════════════
+function isValidIki(v) { return v!==null && v!==undefined && !Number.isNaN(v) && v>=0 && v<IKI_OUTLIER_MAX; }
+function mean(arr) { return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0; }
+function median(arr) {
+  if(!arr.length) return 0;
+  const s=[...arr].sort((a,b)=>a-b);
+  const m=Math.floor(s.length/2);
+  return s.length%2?s[m]:(s[m-1]+s[m])/2;
+}
+function stddev(arr) {
+  if(arr.length<2) return 0;
+  const m=mean(arr);
+  return Math.sqrt(arr.reduce((a,b)=>a+(b-m)**2,0)/(arr.length-1));
+}
+function round2(n) { return Math.round(n*100)/100; }
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  const cap=document.getElementById('baseline-capture');
+  const pass=document.getElementById('baseline-passage');
+  if(cap&&pass) {
+    cap.addEventListener('keydown',handleBaselineKeydown);
+    cap.addEventListener('paste',handleBaselinePaste);
+    cap.addEventListener('drop',handleBaselinePaste);
+    cap.addEventListener('blur',()=>{
+      if(document.getElementById('screen-baseline').classList.contains('active')&&!isSkipModalOpen())
+        setTimeout(focusBaselineCapture,0);
+    });
+    pass.addEventListener('click',focusBaselineCapture);
+    pass.addEventListener('mousedown',e=>{e.preventDefault();focusBaselineCapture();});
+  }
+  bindGlobalListeners();
+  restoreDraftIfAvailable();
+  renderConsentModal();
+  enforceConsentGate();
+  renderBaselinePassage('',makeEmptyBaselineMetrics());
 });
 </script>
 </body>
