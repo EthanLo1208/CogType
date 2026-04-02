@@ -356,7 +356,7 @@ hr{border:none;border-top:1px solid var(--border);margin:24px 0;}
 <div class="screen" id="screen-baseline">
   <div class="card" style="max-width:640px;">
     <h1>Baseline Typing</h1>
-    <p class="sub">Type the passage below exactly as shown. This calibrates your natural typing speed — used as a covariate in analysis. Do not paste or use keyboard shortcuts.</p>
+    <p class="sub">Type the short passage below exactly as shown. This calibrates your natural typing speed and accuracy. Do not paste or use keyboard shortcuts.</p>
 
     <div class="meta-pill">
       <span>Participant: <strong id="b-pid">—</strong></span>
@@ -540,9 +540,9 @@ hr{border:none;border-top:1px solid var(--border);margin:24px 0;}
 //  CONSTANTS
 // ════════════════════════════════════════════
 const MIN_WPM = 25;
-const BASELINE_MIN_COMPLETION = 0.98;
-const BASELINE_MIN_ACCURACY = 0.90;
-const BASELINE_MIN_ELAPSED_MS = 10000;
+const BASELINE_MIN_COMPLETION = 1.00;
+const BASELINE_MIN_ACCURACY = 0.50;
+const BASELINE_MIN_ELAPSED_MS = 3000;
 const PAUSE_THRESHOLD_MS = 1000;
 const BURST_GAP_MS = 2000;
 const PRE_SENT_MIN_MS = 300;
@@ -561,7 +561,7 @@ const PROMPTS = [
 
 const COND_LABELS = { brain:'Brain-Only', search:'Search Engine', llm:'LLM-Assisted' };
 
-const BASELINE_TEXT = `The relationship between technology and human cognition has become one of the most debated topics in modern psychology. As digital tools grow more capable, researchers are asking whether reliance on these tools changes the way people think, plan, and remember. Some argue that offloading cognitive tasks to machines frees up mental resources for higher-order thinking. Others contend that the practice erodes the very skills it replaces.`;
+const BASELINE_TEXT = `Clear writing depends on careful thinking, steady attention, and practice over time.`;
 
 // ════════════════════════════════════════════
 //  STATE
